@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Our Milestone Map 📍 Our Love Journey</title>
+  <title>Kessie Map 📍 Our Love Journey</title>
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -1152,7 +1152,7 @@
     }
 
 
-    // --- 10. 新增回憶表單 ---
+    // --- 10. 新增回憶表單 (整合非必填相容功能) ---
     const form = document.getElementById('milestone-form');
     form.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -1165,30 +1165,38 @@
       const fileInput = document.getElementById('image-input');
       const file = fileInput.files[0];
 
+      // 包裝儲存動作的獨立函式
+      const saveMilestone = (imageDataUrl) => {
+        const newMilestone = {
+          id: Date.now(),
+          lat: selectedLatLng.lat,
+          lng: selectedLatLng.lng,
+          title: document.getElementById('title').value,
+          date: document.getElementById('date').value,
+          desc: document.getElementById('desc').value,
+          img: imageDataUrl
+        };
+
+        milestones.push(newMilestone);
+        localStorage.setItem('milestones', JSON.stringify(milestones));
+
+        renderMarkers();
+        form.reset();
+        selectedLatLng = null;
+        alert('成功留下一個美麗的紀念印記！🎒');
+      };
+
       if (file) {
+        // 如果有選擇檔案，讀取圖片並儲存
         const reader = new FileReader();
         reader.onload = function(event) {
-          const base64Image = event.target.result;
-
-          const newMilestone = {
-            id: Date.now(),
-            lat: selectedLatLng.lat,
-            lng: selectedLatLng.lng,
-            title: document.getElementById('title').value,
-            date: document.getElementById('date').value,
-            desc: document.getElementById('desc').value,
-            img: base64Image
-          };
-
-          milestones.push(newMilestone);
-          localStorage.setItem('milestones', JSON.stringify(milestones));
-
-          renderMarkers();
-          form.reset();
-          selectedLatLng = null;
-          alert('成功留下一個美麗的紀念印記！🎒');
+          saveMilestone(event.target.result);
         };
         reader.readAsDataURL(file);
+      } else {
+        // 如果沒有選擇檔案，給一個帶有愛心的 SVG 預設背景圖 (免去外部連結載入失敗風險)
+        const defaultPlaceholderSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="280" height="200" viewBox="0 0 280 200" style="background:%23ffeaa7;"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="64">💖</text></svg>';
+        saveMilestone(defaultPlaceholderSvg);
       }
     });
 
