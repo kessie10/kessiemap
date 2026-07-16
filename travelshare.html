@@ -41,111 +41,11 @@
       color: var(--dark-color);
     }
 
-    /* ========================================== */
-    /* 🔒 【新增】登入系統遮罩樣式                 */
-    /* ========================================== */
-    .login-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      background: linear-gradient(135deg, rgba(255, 118, 117, 0.98), rgba(253, 121, 168, 0.98));
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      z-index: 99999; /* 確保擋在最上層 */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-
-    /* 隱藏登入畫面的類別 */
-    .login-overlay.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    /* 登入盒主體 */
-    .login-box {
-      background: white;
-      padding: 40px 30px;
-      border-radius: 24px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .login-avatar {
-      font-size: 3.5rem;
-      margin-bottom: 15px;
-      animation: pulse 2s infinite;
-    }
-
-    .login-box h2 {
-      color: var(--primary-color);
-      margin-bottom: 8px;
-      font-size: 1.5rem;
-      font-weight: 900;
-    }
-
-    .login-box p {
-      color: #636e72;
-      font-size: 0.9rem;
-      margin-bottom: 25px;
-    }
-
-    #login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    #login-password {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #ffeaa7;
-      border-radius: 12px;
-      font-size: 1rem;
-      text-align: center;
-      outline: none;
-      transition: border-color 0.3s;
-    }
-
-    #login-password:focus {
-      border-color: var(--primary-color);
-    }
-
-    .login-error-msg {
-      color: #d63031;
-      font-size: 0.85rem;
-      margin-top: 12px;
-      font-weight: bold;
-      min-height: 20px;
-    }
-
-    /* 登入系統相關動畫 */
-    @keyframes bounceIn {
-      from { opacity: 0; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-
-    /* ========================================== */
-    /* 原有頁面與地圖樣式                         */
-    /* ========================================== */
+    /* 頂部導航 */
     header {
       background: linear-gradient(135deg, var(--primary-color), #fd79a8);
       color: white;
-      padding: 10px 20px 14px 20px;
+      padding: 10px 20px 14px 20px; /* 底部多預留一點點空間給拉伸條 */
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -156,6 +56,7 @@
       width: 100%;
       z-index: 10000;
       gap: 15px;
+      /* 使用動態高度變數，並限制最大與最小拉伸範圍 */
       height: var(--header-height);
       min-height: 76px;
       max-height: 400px; 
@@ -168,9 +69,10 @@
       flex-shrink: 0;
     }
 
+    /* 中間垂直滑動輪播區 */
     .header-carousel {
       flex: 1;
-      height: 100%; 
+      height: 100%; /* 填滿整個 Header 高度 */
       max-width: 500px;
       margin: 0 10px;
       position: relative;
@@ -187,9 +89,10 @@
       transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
     }
 
+    /* 輪播頁面 */
     .carousel-slide {
       width: 100%;
-      height: 100%; 
+      height: 100%; /* 高度隨父容器拉伸 */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -198,6 +101,7 @@
       transition: opacity 0.6s;
     }
 
+    /* 利用百分比定位兩個 Slide，確保動態高度下拉伸位移正確 */
     #slide-countdown {
       top: 0%;
     }
@@ -205,6 +109,7 @@
       top: 100%;
     }
 
+    /* 1. 倒數計時樣式 */
     .countdown-inline-container {
       width: 100%;
       height: 100%;
@@ -243,6 +148,7 @@
       transform: scale(1.2);
     }
 
+    /* 2. 整合版悄悄話白板樣式 */
     .whiteboard-container {
       width: 100%;
       height: 100%;
@@ -267,6 +173,7 @@
       cursor: crosshair;
     }
 
+    /* 左上角清除按鈕 */
     .canvas-clear-wrapper {
       position: absolute;
       left: 6px;
@@ -290,6 +197,7 @@
       transform: scale(1.05);
     }
 
+    /* 右側滑動膠囊工具切換鈕 */
     .slide-switch-wrapper {
       position: absolute;
       right: 6px;
@@ -313,6 +221,7 @@
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
 
+    /* 滑動背景滑塊 */
     .switch-slider {
       position: absolute;
       top: 2px;
@@ -326,6 +235,7 @@
       z-index: 1;
     }
 
+    /* 當在 text 模式時滑塊右移 */
     .tool-slide-switch.text-mode .switch-slider {
       transform: translateX(32px);
     }
@@ -336,6 +246,7 @@
       transition: transform 0.2s;
     }
 
+    /* 頂部 Header 下拉拉伸條樣式 */
     .header-resizer {
       position: absolute;
       bottom: 0;
@@ -352,6 +263,7 @@
       background: rgba(255, 255, 255, 0.5);
     }
 
+    /* 右側控制組 */
     .controls-group {
       display: flex;
       align-items: center;
@@ -428,6 +340,7 @@
       transform: translateX(20px);
     }
 
+    /* 頁面滑動主容器 */
     .slider-container {
       display: flex;
       width: 200vw;
@@ -439,10 +352,12 @@
     .page {
       width: 100vw;
       height: 100vh;
+      /* padding-top 改為動態使用 CSS 變數，保證與拉伸後的 Header 完美貼合 */
       padding-top: var(--header-height);
       position: relative;
     }
 
+    /* --- PAGE 1: 地圖模式 --- */
     #map-page {
       display: flex;
       flex-direction: row;
@@ -456,6 +371,7 @@
       min-height: 100px;
     }
 
+    /* 左右/上下拉伸滑軌 */
     .resizer {
       background-color: #ffeaa7;
       background-image: radial-gradient(var(--primary-color) 20%, transparent 20%),
@@ -532,9 +448,11 @@
       background-color: #e17055;
     }
 
+    /* --- PAGE 2: 回憶時光牆 --- */
     #gallery-page {
       background: #fcf8f8;
       overflow-y: auto;
+      /* 頂部 padding 配合動態 Header 高度 */
       padding: calc(var(--header-height) + 20px) 20px 40px 20px;
     }
 
@@ -667,6 +585,7 @@
       color: white;
     }
 
+    /* 地圖彈出視窗樣式 */
     .custom-popup .leaflet-popup-content-wrapper {
       border-radius: 12px;
       padding: 5px;
@@ -708,7 +627,7 @@
       header {
         flex-direction: column;
         height: auto;
-        min-height: 170px; 
+        min-height: 170px; /* 手機版初始高度更高 */
         max-height: 500px;
         padding: 10px;
         gap: 8px;
@@ -719,6 +638,7 @@
         max-width: 100%;
       }
       .page {
+        /* 手機版同樣使用動態計算 */
         padding-top: var(--header-height);
       }
       #map-page {
@@ -750,20 +670,6 @@
   </style>
 </head>
 <body>
-
-  <!-- 🔒 【新增】登入系統遮罩 -->
-  <div id="login-overlay" class="login-overlay">
-    <div class="login-box">
-      <div class="login-avatar">💖</div>
-      <h2>我們的專屬回憶空間</h2>
-      <p>請輸入密碼解鎖我們的甜蜜地圖</p>
-      <form id="login-form">
-        <input type="password" id="login-password" placeholder="請輸入密碼..." required autocomplete="current-password" />
-        <button type="submit" class="btn" style="width: 100%; font-size: 1rem;">解鎖空間 ✨</button>
-      </form>
-      <div id="login-error" class="login-error-msg"></div>
-    </div>
-  </div>
 
   <!-- 頂部導航 -->
   <header id="main-header">
@@ -887,53 +793,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    // ==========================================
-    // 🔑 【新增】登入控制邏輯
-    // ==========================================
-    const CORRECT_PASSWORD = "kessielove"; // 👈 你可以隨時在這裡修改解鎖密碼！
-
-    const loginOverlay = document.getElementById('login-overlay');
-    const loginForm = document.getElementById('login-form');
-    const loginPasswordInput = document.getElementById('login-password');
-    const loginError = document.getElementById('login-error');
-
-    // 頁面載入時檢查是否已登入 (利用 sessionStorage，關閉網頁前都不需要重複登入)
-    if (sessionStorage.getItem('isLoggedIn') === 'true') {
-      loginOverlay.classList.add('hidden');
-    }
-
-    loginForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const enteredPassword = loginPasswordInput.value;
-
-      if (enteredPassword === CORRECT_PASSWORD) {
-        // 驗證正確
-        sessionStorage.setItem('isLoggedIn', 'true');
-        loginOverlay.classList.add('hidden');
-        loginError.innerText = "";
-        loginPasswordInput.value = "";
-        
-        // 登入成功後，重新整理與修正畫布及地圖版面
-        setTimeout(() => {
-          resizeCanvas();
-          map.invalidateSize();
-        }, 300);
-      } else {
-        // 密碼錯誤
-        loginError.innerText = "❌ 密碼不正確唷，請再試一次！🎒";
-        loginPasswordInput.value = "";
-        loginPasswordInput.focus();
-        
-        // 產生錯誤時的彈跳提示動畫回饋
-        const loginBox = loginOverlay.querySelector('.login-box');
-        loginBox.style.animation = 'none';
-        setTimeout(() => {
-          loginBox.style.animation = 'bounceIn 0.3s';
-        }, 10);
-      }
-    });
-
-
     // --- 1. 頁面切換 ---
     const slider = document.getElementById('slider-container');
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -951,6 +810,7 @@
     const resizeObserver = new ResizeObserver(entries => {
       for (let entry of entries) {
         const headerHeight = entry.target.clientHeight;
+        // 將實際渲染出的 Header 高度寫入 CSS root 變數，完美解決拉伸後內容重疊問題
         document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
         if (typeof resizeCanvas === 'function') {
           resizeCanvas();
@@ -970,6 +830,7 @@
 
     toggleCountdown.checked = isCountdownOn;
 
+    // 將輪播位移計算改為「百分比 (%)」位移，不受拉伸時的固定像素影響
     function startCarousel() {
       stopCarousel();
       if (isCountdownOn) {
@@ -1138,11 +999,12 @@
     }).addTo(map);
 
 
-    // --- 5. 頁面拖曳拉伸功能 (包含左右滑軌與頂部 Header 拉伸) ---
+    // --- 4.5 頁面拖曳拉伸功能 (包含左右滑軌與全新的頂部 Header 拉伸) ---
     const resizer = document.getElementById('drag-bar');
     const sidebar = document.getElementById('sidebar-container');
     const mapContainer = document.getElementById('map');
     
+    // 頂部拉伸控制 DOM
     const headerResizer = document.getElementById('header-drag-bar');
     const mainHeader = document.getElementById('main-header');
     
@@ -1150,6 +1012,7 @@
     let isDraggingHeader = false;
 
     function initResizers() {
+      // --- 1. 原本的左右/上下側邊欄拉伸 ---
       const startDragSidebar = (e) => {
         isDraggingSidebar = true;
         resizer.classList.add('dragging');
@@ -1157,6 +1020,7 @@
         document.body.style.cursor = window.innerWidth > 860 ? 'col-resize' : 'row-resize';
       };
 
+      // --- 2. 頂部 Header 上下拉伸 ---
       const startDragHeader = (e) => {
         isDraggingHeader = true;
         headerResizer.classList.add('dragging');
@@ -1164,10 +1028,12 @@
         document.body.style.cursor = 'row-resize';
       };
 
+      // 拖曳進行中
       const doDrag = (e) => {
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
+        // 處理側邊欄拖曳
         if (isDraggingSidebar) {
           if (window.innerWidth > 860) {
             const containerWidth = window.innerWidth;
@@ -1190,8 +1056,10 @@
           map.invalidateSize();
         }
 
+        // 處理頂部導航欄 (Header & Canvas) 手動上下拉伸
         if (isDraggingHeader) {
           const newHeaderHeight = clientY;
+          // 限制高度在 76px 至 400px 之間，避免拉太小崩壞或拉太大擋住整面
           if (newHeaderHeight >= 76 && newHeaderHeight <= 400) {
             document.documentElement.style.setProperty('--header-height', `${newHeaderHeight}px`);
           }
@@ -1199,6 +1067,7 @@
         }
       };
 
+      // 結束拖曳
       const stopDrag = () => {
         if (isDraggingSidebar) {
           isDraggingSidebar = false;
@@ -1214,12 +1083,15 @@
         document.body.style.cursor = '';
       };
 
+      // 側邊欄事件綁定
       resizer.addEventListener('mousedown', startDragSidebar);
       resizer.addEventListener('touchstart', startDragSidebar);
 
+      // 頂部 Header 拉伸事件綁定
       headerResizer.addEventListener('mousedown', startDragHeader);
       headerResizer.addEventListener('touchstart', startDragHeader);
 
+      // 全局移動與放開監聽
       document.addEventListener('mousemove', doDrag);
       document.addEventListener('mouseup', stopDrag);
       document.addEventListener('touchmove', doDrag, { passive: false });
@@ -1229,17 +1101,43 @@
     initResizers();
 
 
-    // --- 6. 資料庫 (LocalStorage) ---
+    // --- 5. 雲端資料庫 (Google Sheets Apps Script 集成) ---
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydEJV7sowFAb85TxMyN2Ifx-3DVF7Z-JFLP9X2H-h0Bn5GgVMOpvWJyZF0h_euWKY2/exec"; 
+
     let selectedLatLng = null;
     let selectedLocationText = ""; 
-    let milestones = JSON.parse(localStorage.getItem('milestones')) || [];
+    let milestones = [];
     let nextTrip = JSON.parse(localStorage.getItem('nextTrip')) || {
       title: "下一次的旅行",
       date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     };
 
+    // 從 Google 試算表載入數據
+    async function loadMilestonesFromCloud() {
+      if (!GOOGLE_SCRIPT_URL) {
+        console.warn("尚未填寫 GOOGLE_SCRIPT_URL，地圖目前將不會載入雲端數據。");
+        return;
+      }
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL);
+        if (!response.ok) throw new Error("網路連線異常");
+        milestones = await response.json();
+        
+        // 確保經緯度座標被正確解析成數值
+        milestones.forEach(m => {
+          m.lat = parseFloat(m.lat);
+          m.lng = parseFloat(m.lng);
+        });
 
-    // --- 7. 點擊地圖事件 + 免費地理反查 API ---
+        renderMarkers();
+        renderTimeline();
+      } catch (error) {
+        console.error("無法從雲端載入回憶數據:", error);
+      }
+    }
+
+
+    // --- 6. 點擊地圖事件 + 免費地理反查 API ---
     map.on('click', function(e) {
       selectedLatLng = e.latlng;
       const inputField = document.getElementById('location-name');
@@ -1282,7 +1180,7 @@
     });
 
 
-    // --- 8. 渲染地標 ---
+    // --- 7. 渲染地標 ---
     function renderMarkers() {
       map.eachLayer((layer) => {
         if (layer instanceof L.Marker) {
@@ -1312,7 +1210,7 @@
     }
 
 
-    // --- 9. 渲染回憶時光軸 ---
+    // --- 8. 渲染回憶時光軸 ---
     function renderTimeline() {
       const timelineList = document.getElementById('timeline-list');
       timelineList.innerHTML = '';
@@ -1357,8 +1255,13 @@
     }
 
 
-    // --- 10. 編輯與刪除 ---
-    function editMilestone(id) {
+    // --- 9. 雲端編輯與刪除 ---
+    async function editMilestone(id) {
+      if (!GOOGLE_SCRIPT_URL) {
+        alert("請先設定 GOOGLE_SCRIPT_URL 方可進行修改！");
+        return;
+      }
+
       const index = milestones.findIndex(item => item.id === id);
       if (index === -1) return;
 
@@ -1376,34 +1279,80 @@
       const newDesc = prompt("修改當時的回憶：", item.desc);
       if (newDesc === null) return;
 
-      milestones[index].title = newTitle;
-      milestones[index].date = newDate;
-      milestones[index].locationText = newLocation;
-      milestones[index].desc = newDesc;
+      const updatedData = {
+        action: 'edit',
+        id: id,
+        title: newTitle,
+        date: newDate,
+        locationText: newLocation,
+        desc: newDesc
+      };
 
-      localStorage.setItem('milestones', JSON.stringify(milestones));
-      
-      renderMarkers();
-      renderTimeline();
-      alert("回憶修改成功囉！💝");
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          redirect: "follow",
+          method: "POST",
+          body: JSON.stringify(updatedData)
+        });
+        
+        if (response.ok) {
+          milestones[index].title = newTitle;
+          milestones[index].date = newDate;
+          milestones[index].locationText = newLocation;
+          milestones[index].desc = newDesc;
+
+          renderMarkers();
+          renderTimeline();
+          alert("雲端修改成功囉！💝");
+        } else {
+          throw new Error("更新失敗");
+        }
+      } catch (err) {
+        alert("雲端修改失敗，請再試一次！");
+        console.error(err);
+      }
     }
 
-    function deleteMilestone(id) {
-      const confirmDelete = confirm("你確定要刪除這個珍貴的回憶嗎？（地標也會一併刪除喔）");
+    async function deleteMilestone(id) {
+      if (!GOOGLE_SCRIPT_URL) {
+        alert("請先設定 GOOGLE_SCRIPT_URL 方可進行刪除！");
+        return;
+      }
+
+      const confirmDelete = confirm("你確定要刪除這個珍貴的回憶嗎？（雲端資料也會一併刪除喔）");
       if (!confirmDelete) return;
 
-      milestones = milestones.filter(item => item.id !== id);
-      localStorage.setItem('milestones', JSON.stringify(milestones));
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          redirect: "follow",
+          method: "POST",
+          body: JSON.stringify({ action: 'delete', id: id })
+        });
 
-      renderMarkers();
-      renderTimeline();
+        if (response.ok) {
+          milestones = milestones.filter(item => item.id !== id);
+          renderMarkers();
+          renderTimeline();
+          alert("已成功自雲端刪除！🧹");
+        } else {
+          throw new Error("刪除失敗");
+        }
+      } catch (err) {
+        alert("雲端刪除失敗，請再試一次！");
+        console.error(err);
+      }
     }
 
 
-    // --- 11. 新增回憶表單 ---
+    // --- 10. 新增回憶表單與上傳雲端 ---
     const form = document.getElementById('milestone-form');
     form.addEventListener('submit', function(e) {
       e.preventDefault();
+
+      if (!GOOGLE_SCRIPT_URL) {
+        alert('請先在 JavaScript 代碼中填寫部屬好的 GOOGLE_SCRIPT_URL 才能將資料儲存至雲端喔！');
+        return;
+      }
 
       if (!selectedLatLng) {
         alert('請先在左邊地圖上點選一個位置喔！');
@@ -1418,7 +1367,7 @@
       const fileInput = document.getElementById('image-input');
       const file = fileInput.files[0];
 
-      const saveMilestone = (imageDataUrl) => {
+      const saveMilestone = async (imageDataUrl) => {
         const newMilestone = {
           id: Date.now(),
           lat: selectedLatLng.lat,
@@ -1430,14 +1379,35 @@
           img: imageDataUrl
         };
 
-        milestones.push(newMilestone);
-        localStorage.setItem('milestones', JSON.stringify(milestones));
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = "上傳雲端中... ☁️";
+        submitBtn.disabled = true;
 
-        renderMarkers();
-        form.reset();
-        selectedLatLng = null;
-        selectedLocationText = "";
-        alert('成功留下一個美麗的紀念印記！🎒');
+        try {
+          const response = await fetch(GOOGLE_SCRIPT_URL, {
+            redirect: "follow",
+            method: "POST",
+            body: JSON.stringify(newMilestone)
+          });
+          
+          if (response.ok) {
+            milestones.push(newMilestone);
+            renderMarkers();
+            form.reset();
+            selectedLatLng = null;
+            selectedLocationText = "";
+            alert('成功將回憶留存到雲端！🎒💖');
+          } else {
+            throw new Error("雲端寫入失敗");
+          }
+        } catch (err) {
+          alert("儲存至雲端失敗，請檢查網路連線或 Apps Script 部屬設定！");
+          console.error(err);
+        } finally {
+          submitBtn.innerText = originalText;
+          submitBtn.disabled = false;
+        }
       };
 
       if (file) {
@@ -1453,7 +1423,7 @@
     });
 
 
-    // --- 12. 倒數計時邏輯 ---
+    // --- 11. 倒數計時邏輯 ---
     function updateCountdown() {
       document.getElementById('countdown-title').innerText = `距離【${nextTrip.title}】`;
       
@@ -1489,8 +1459,8 @@
     setInterval(updateCountdown, 1000);
 
 
-    // --- 13. 初始化載入 ---
-    renderMarkers();
+    // --- 12. 初始化載入 ---
+    loadMilestonesFromCloud();
     updateCountdown();
     startCarousel();
   </script>
