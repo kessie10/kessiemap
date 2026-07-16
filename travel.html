@@ -783,6 +783,10 @@
         document.querySelectorAll('.page').forEach(page => {
           page.style.paddingTop = `${headerHeight}px`;
         });
+        // 【優化】當 Header 因視窗拉伸改變尺寸時，白板也應同步更新
+        if (typeof resizeCanvas === 'function') {
+          resizeCanvas();
+        }
       }
     });
     resizeObserver.observe(document.getElementById('main-header'));
@@ -830,7 +834,7 @@
     });
 
 
-    // --- 3. 整合式二合一白板邏輯 ---
+    // --- 3. 整合式二合一白板邏輯 (強化響應拉伸自適應) ---
     const canvas = document.getElementById('whiteboard-canvas');
     const ctx = canvas.getContext('2d');
     const clearBtn = document.getElementById('clear-canvas');
@@ -852,29 +856,55 @@
       }
     });
 
-    // 畫布寬高自適應
+    // 【核心優化】畫布寬高自適應：解決拉伸時內容遺失或座標偏移問題
     function resizeCanvas() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      loadCanvasData(); // 重新載入儲存內容
+      const container = canvas.parentElement;
+      if (!container) return;
+
+      const newWidth = container.clientWidth;
+      const newHeight = container.clientHeight;
+
+      // 如果大小沒有實質改變，不進行重繪，防止資源浪費與閃爍
+      if (canvas.width === newWidth && canvas.height === newHeight) return;
+
+      // 1. 備份當前畫布內容 (以 DataURL 形式臨時保存)
+      const tempImgData = canvas.toDataURL();
+
+      // 2. 更新畫布物理像素大小 (這會清空畫布)
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+
+      // 3. 設定畫筆樣式 (重新設定，因為改變 width/height 會重置 context 狀態)
+      ctx.strokeStyle = '#ff7675';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // 4. 將原先的塗鴉等比例「拉伸貼合」回新畫布中
+      if (tempImgData && tempImgData !== "data:,") {
+        const img = new Image();
+        img.onload = function() {
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+        };
+        img.src = tempImgData;
+      } else {
+        // 如果臨時備份為空，則嘗試載入 localStorage
+        loadCanvasData();
+      }
     }
 
-    // 取得點擊座標
+    // 取得點擊座標 (使用 getBoundingClientRect 動態計算，防止拉伸後的偏移)
     function getMousePos(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      // 確保將屏幕座標精準對齊到 canvas 內部的像素座標
       return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
+        x: (clientX - rect.left) * (canvas.width / rect.width),
+        y: (clientY - rect.top) * (canvas.height / rect.height)
       };
     }
-
-    // 畫畫功能
-    ctx.strokeStyle = '#ff7675';
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
 
     function startDraw(e) {
       const pos = getMousePos(e);
@@ -937,11 +967,16 @@
       if (savedDoodle) {
         const img = new Image();
         img.onload = function() {
-          ctx.drawImage(img, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          // 載入時也完美契合當前拉伸後的寬高
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         };
         img.src = savedDoodle;
       }
     }
+
+    // 【新增】監聽全局視窗尺寸改變
+    window.addEventListener('resize', resizeCanvas);
 
     window.addEventListener('load', () => {
       resizeCanvas();
