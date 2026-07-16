@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="apple-mobile-web-app-title" content="Kessie Map">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="icon.jpg?v=1">
+  <link rel="icon" type="image/jpeg" href="icon.jpg">
+  <title>Kessie Map 📍 Our Love Journey</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=300;400;700;900&family=Pacifico&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #ff7675;
+      --secondary-color: #ffeaa7;
+      --dark-color: #2d3436;
+      --light-color: #f9f9f9;
+      --transition-speed: 0.6s;
+      /* 定義頂部 Header 的初始高度變數 */
+      --header-height: 80px; 
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--light-color);
+      color: var(--dark-color);
+    }
+
+    /* ========================================== */
+    /* 🔒 【新增】登入系統遮罩樣式                 */
+    /* ========================================== */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(135deg, rgba(255, 118, 117, 0.98), rgba(253, 121, 168, 0.98));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 99999; /* 確保擋在最上層 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    /* 隱藏登入畫面的類別 */
+    .login-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* 登入盒主體 */
+    .login-box {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 24px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .login-avatar {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+      animation: pulse 2s infinite;
+    }
+
+    .login-box h2 {
+      color: var(--primary-color);
+      margin-bottom: 8px;
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
+
+    .login-box p {
+      color: #636e72;
+      font-size: 0.9rem;
+      margin-bottom: 25px;
+    }
+
+    #login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    #login-password {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ffeaa7;
+      border-radius: 12px;
+      font-size: 1rem;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    #login-password:focus {
+      border-color: var(--primary-color);
+    }
+
+    .login-error-msg {
+      color: #d63031;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      font-weight: bold;
+      min-height: 20px;
+    }
+
+    /* 登入系統相關動畫 */
+    @keyframes bounceIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    /* ========================================== */
+    /* 原有頁面與地圖樣式                         */
+    /* ========================================== */
+    header {
+      background: linear-gradient(135deg, var(--primary-color), #fd79a8);
+      color: white;
+      padding: 10px 20px 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10000;
+      gap: 15px;
+      height: var(--header-height);
+      min-height: 76px;
+      max-height: 400px; 
+    }
+
+    h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+
+    .header-carousel {
+      flex: 1;
+      height: 100%; 
+      max-width: 500px;
+      margin: 0 10px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .carousel-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    .carousel-slide {
+      width: 100%;
+      height: 100%; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      left: 0;
+      transition: opacity 0.6s;
+    }
+
+    #slide-countdown {
+      top: 0%;
+    }
+    #slide-whiteboard {
+      top: 100%;
+    }
+
+    .countdown-inline-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      padding: 0 10px;
+    }
+
+    .countdown-time {
+      font-weight: bold;
+      background: white;
+      color: var(--primary-color);
+      padding: 2px 8px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 0.95rem;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+
+    .icon-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .whiteboard-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      height: 100%;
+      background: white;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #whiteboard-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .canvas-clear-wrapper {
+      position: absolute;
+      left: 6px;
+      top: 6px;
+      z-index: 10;
+    }
+
+    .clear-btn {
+      background: rgba(45, 52, 54, 0.8);
+      color: white;
+      border: none;
+      font-size: 0.75rem;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .clear-btn:hover {
+      background: var(--primary-color);
+      transform: scale(1.05);
+    }
+
+    .slide-switch-wrapper {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+    }
+
+    .tool-slide-switch {
+      position: relative;
+      width: 68px;
+      height: 30px;
+      background: #dfe6e9;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      cursor: pointer;
+      padding: 2px;
+      user-select: none;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .switch-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 32px;
+      height: 26px;
+      background: var(--primary-color);
+      border-radius: 13px;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      z-index: 1;
+    }
+
+    .tool-slide-switch.text-mode .switch-slider {
+      transform: translateX(32px);
+    }
+
+    .switch-label {
+      font-size: 0.85rem;
+      z-index: 2;
+      transition: transform 0.2s;
+    }
+
+    .header-resizer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      cursor: row-resize;
+      transition: background 0.2s;
+      z-index: 10001;
+    }
+    
+    .header-resizer:hover, .header-resizer.dragging {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .nav-btn.active, .nav-btn:hover {
+      background: white;
+      color: var(--primary-color);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255,255,255,0.3);
+      transition: .4s;
+      border-radius: 34px;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #2ecc71;
+      border-color: #2ecc71;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    .slider-container {
+      display: flex;
+      width: 200vw;
+      height: 100vh;
+      transition: transform var(--transition-speed) cubic-bezier(0.645, 0.045, 0.355, 1);
+      transform: translateX(0);
+    }
+
+    .page {
+      width: 100vw;
+      height: 100vh;
+      padding-top: var(--header-height);
+      position: relative;
+    }
+
+    #map-page {
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+    }
+
+    #map {
+      flex: 1;
+      height: 100%;
+      min-width: 100px;
+      min-height: 100px;
+    }
+
+    .resizer {
+      background-color: #ffeaa7;
+      background-image: radial-gradient(var(--primary-color) 20%, transparent 20%),
+                        radial-gradient(var(--primary-color) 20%, transparent 20%);
+      background-size: 6px 6px;
+      background-position: 0 0, 3px 3px;
+      width: 12px;
+      cursor: col-resize;
+      align-self: stretch;
+      transition: background-color 0.2s;
+      z-index: 1000;
+    }
+
+    .resizer:hover, .resizer.dragging {
+      background-color: var(--primary-color);
+    }
+
+    .sidebar {
+      width: 320px;
+      min-width: 200px;
+      background: white;
+      box-shadow: -4px 0 15px rgba(0,0,0,0.05);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      overflow-y: auto;
+    }
+
+    h3 {
+      color: var(--primary-color);
+      border-bottom: 2px dashed var(--secondary-color);
+      padding-bottom: 8px;
+      font-size: 1.15rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #636e72;
+    }
+
+    input, textarea {
+      padding: 8px 12px;
+      border: 1px solid #dfe6e9;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary-color);
+    }
+
+    button.btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button.btn:hover {
+      background-color: #e17055;
+    }
+
+    #gallery-page {
+      background: #fcf8f8;
+      overflow-y: auto;
+      padding: calc(var(--header-height) + 20px) 20px 40px 20px;
+    }
+
+    .gallery-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--primary-color);
+      font-size: 1.8rem;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      bottom: 10px;
+      width: 3px;
+      background: var(--secondary-color);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 40px;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -27px;
+      top: 5px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      border: 3px solid white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      display: flex;
+      max-width: 800px;
+      transition: 0.3s;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .card-img {
+      width: 280px;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--dark-color);
+      padding-right: 60px;
+    }
+
+    .card-date {
+      color: var(--primary-color);
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin: 5px 0 10px 0;
+    }
+
+    .card-desc {
+      color: #636e72;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .card-actions {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      background: #f1f2f6;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .action-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .btn-edit:hover {
+      background: #ffeaa7;
+    }
+
+    .btn-delete:hover {
+      background: #ff7675;
+      color: white;
+    }
+
+    .custom-popup .leaflet-popup-content-wrapper {
+      border-radius: 12px;
+      padding: 5px;
+    }
+
+    .popup-card {
+      width: 220px;
+      text-align: center;
+    }
+
+    .popup-img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .popup-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+    }
+
+    .popup-date {
+      font-size: 0.75rem;
+      color: #b2bec3;
+      margin-bottom: 8px;
+    }
+
+    .popup-desc {
+      font-size: 0.85rem;
+      color: var(--dark-color);
+      line-height: 1.4;
+    }
+
+    /* 手機版適配 */
+    @media (max-width: 860px) {
+      header {
+        flex-direction: column;
+        height: auto;
+        min-height: 170px; 
+        max-height: 500px;
+        padding: 10px;
+        gap: 8px;
+      }
+      .header-carousel {
+        margin: 5px 0;
+        width: 100%;
+        max-width: 100%;
+      }
+      .page {
+        padding-top: var(--header-height);
+      }
+      #map-page {
+        flex-direction: column;
+      }
+      #map {
+        height: 55%;
+        width: 100%;
+      }
+      .resizer {
+        width: 100%;
+        height: 12px;
+        cursor: row-resize;
+      }
+      .sidebar {
+        width: 100%;
+        height: 40%;
+        min-height: 120px;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+      }
+      .card {
+        flex-direction: column;
+      }
+      .card-img {
+        width: 100%;
+        height: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔒 【新增】登入系統遮罩 -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <div class="login-avatar">💖</div>
+      <h2>我們的專屬回憶空間</h2>
+      <p>請輸入密碼解鎖我們的甜蜜地圖</p>
+      <form id="login-form">
+        <input type="password" id="login-password" placeholder="請輸入密碼..." required autocomplete="current-password" />
+        <button type="submit" class="btn" style="width: 100%; font-size: 1rem;">解鎖空間 ✨</button>
+      </form>
+      <div id="login-error" class="login-error-msg"></div>
+    </div>
+  </div>
+
+  <!-- 頂部導航 -->
+  <header id="main-header">
+    <h1>Kessie Map :D </h1>
+    
+    <!-- 中間垂直滑動輪播區 -->
+    <div class="header-carousel">
+      <div class="carousel-inner" id="carousel-inner">
+        
+        <!-- Slide 1: 距離下次旅行倒數 -->
+        <div class="carousel-slide" id="slide-countdown">
+          <div class="countdown-inline-container">
+            <span id="countdown-title">距離下一次旅行</span>
+            <span class="countdown-time" id="countdown-display">計算中...</span>
+            <button class="icon-btn" id="countdown-setup" title="設定目的地與時間">✏️</button>
+          </div>
+        </div>
+
+        <!-- Slide 2: 悄悄話二合一白板 -->
+        <div class="carousel-slide" id="slide-whiteboard">
+          <div class="whiteboard-container">
+            <div class="canvas-wrapper" id="canvas-container">
+              
+              <!-- 清除按鈕 -->
+              <div class="canvas-clear-wrapper">
+                <button class="clear-btn" id="clear-canvas" title="清除全部">🧹 清除</button>
+              </div>
+
+              <!-- 畫布區 -->
+              <canvas id="whiteboard-canvas"></canvas>
+              
+              <!-- 滑動膠囊工具切換鈕 -->
+              <div class="slide-switch-wrapper">
+                <div class="tool-slide-switch" id="tool-slider">
+                  <div class="switch-slider"></div>
+                  <span class="switch-label">🖌️</span>
+                  <span class="switch-label">🔤</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 右側控制面板 -->
+    <div class="controls-group">
+      <div class="nav-tabs">
+        <button class="nav-btn active" onclick="switchPage(0)">🗺️ 地圖</button>
+        <button class="nav-btn" onclick="switchPage(1)">📖 回憶牆</button>
+      </div>
+      
+      <!-- 下次旅行倒數開關 -->
+      <label class="switch" title="開啟/關閉旅行倒數輪播">
+        <input type="checkbox" id="toggle-countdown" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- 頂部下拉手動拉伸滑軌 -->
+    <div class="header-resizer" id="header-drag-bar" title="上下拖曳拉伸白板與導航欄"></div>
+  </header>
+
+  <!-- 頁面滑動容器 -->
+  <div class="slider-container" id="slider-container">
+    
+    <!-- PAGE 1: 紀念日地圖 -->
+    <div class="page" id="map-page">
+      <div id="map"></div>
+      
+      <!-- 拖曳拉伸滑軌 -->
+      <div class="resizer" id="drag-bar"></div>
+      
+      <div class="sidebar" id="sidebar-container">
+        <div>
+          <h3>📍 記錄新回憶</h3>
+          <p style="font-size: 0.75rem; color: #b2bec3; margin: 5px 0;">點擊地圖任意位置，系統將自動生成國家與地區</p>
+          
+          <form id="milestone-form">
+            <div class="form-group">
+              <label>國家 / 地區</label>
+              <input type="text" id="location-name" placeholder="點選地圖自動帶入地區..." readonly required />
+            </div>
+            <div class="form-group">
+              <label>地點/活動</label>
+              <input type="text" id="title" placeholder="如：到此一遊~~~" required />
+            </div>
+            <div class="form-group">
+              <label>日期</label>
+              <input type="date" id="date" required />
+            </div>
+            <div class="form-group">
+              <label>上傳照片</label>
+              <input type="file" id="image-input" accept="image/*" />
+            </div>
+            <div class="form-group">
+              <label>當時的回憶</label>
+              <textarea id="desc" rows="5" placeholder=" 有咩想講! 🥰" required></textarea>
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">💘 提交 ✨</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: 回憶牆 -->
+    <div class="page" id="gallery-page">
+      <div class="gallery-container">
+        <h2 class="section-title">💖 快樂小時光 💖</h2>
+        <div class="timeline" id="timeline-list">
+          <!-- JS 動態渲染 -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // ==========================================
+    // 🔑 【新增】登入控制邏輯
+    // ==========================================
+    const CORRECT_PASSWORD = "kessielove"; // 👈 你可以隨時在這裡修改解鎖密碼！
+
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginForm = document.getElementById('login-form');
+    const loginPasswordInput = document.getElementById('login-password');
+    const loginError = document.getElementById('login-error');
+
+    // 頁面載入時檢查是否已登入 (利用 sessionStorage，關閉網頁前都不需要重複登入)
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+      loginOverlay.classList.add('hidden');
+    }
+
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const enteredPassword = loginPasswordInput.value;
+
+      if (enteredPassword === CORRECT_PASSWORD) {
+        // 驗證正確
+        sessionStorage.setItem('isLoggedIn', 'true');
+        loginOverlay.classList.add('hidden');
+        loginError.innerText = "";
+        loginPasswordInput.value = "";
+        
+        // 登入成功後，重新整理與修正畫布及地圖版面
+        setTimeout(() => {
+          resizeCanvas();
+          map.invalidateSize();
+        }, 300);
+      } else {
+        // 密碼錯誤
+        loginError.innerText = "❌ 密碼不正確唷，請再試一次！🎒";
+        loginPasswordInput.value = "";
+        loginPasswordInput.focus();
+        
+        // 產生錯誤時的彈跳提示動畫回饋
+        const loginBox = loginOverlay.querySelector('.login-box');
+        loginBox.style.animation = 'none';
+        setTimeout(() => {
+          loginBox.style.animation = 'bounceIn 0.3s';
+        }, 10);
+      }
+    });
+
+
+    // --- 1. 頁面切換 ---
+    const slider = document.getElementById('slider-container');
+    const navButtons = document.querySelectorAll('.nav-btn');
+
+    function switchPage(pageIndex) {
+      slider.style.transform = `translateX(-${pageIndex * 100}vw)`;
+      navButtons.forEach((btn, idx) => {
+        if (idx === pageIndex) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      if (pageIndex === 1) renderTimeline();
+    }
+
+    // 動態偵測 Header 高度，同步寫入 CSS 變數供頁面 Padding 使用
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        const headerHeight = entry.target.clientHeight;
+        document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
+        if (typeof resizeCanvas === 'function') {
+          resizeCanvas();
+        }
+      }
+    });
+    resizeObserver.observe(document.getElementById('main-header'));
+
+
+    // --- 2. 輪播控制與倒數計時開關 (10秒滑動一次) ---
+    const carouselInner = document.getElementById('carousel-inner');
+    const toggleCountdown = document.getElementById('toggle-countdown');
+    
+    let carouselInterval = null;
+    let currentSlide = 0; 
+    let isCountdownOn = localStorage.getItem('countdown_enabled') !== 'false';
+
+    toggleCountdown.checked = isCountdownOn;
+
+    function startCarousel() {
+      stopCarousel();
+      if (isCountdownOn) {
+        carouselInterval = setInterval(() => {
+          currentSlide = currentSlide === 0 ? 1 : 0;
+          carouselInner.style.transform = `translateY(-${currentSlide * 100}%)`;
+        }, 10000);
+      } else {
+        currentSlide = 1;
+        carouselInner.style.transform = `translateY(-100%)`;
+      }
+    }
+
+    function stopCarousel() {
+      if (carouselInterval) {
+        clearInterval(carouselInterval);
+        carouselInterval = null;
+      }
+    }
+
+    toggleCountdown.addEventListener('change', function() {
+      isCountdownOn = this.checked;
+      localStorage.setItem('countdown_enabled', isCountdownOn ? 'true' : 'false');
+      if (isCountdownOn) {
+        currentSlide = 0;
+        carouselInner.style.transform = `translateY(0%)`;
+      }
+      startCarousel();
+    });
+
+
+    // --- 3. 整合式二合一白板邏輯 ---
+    const canvas = document.getElementById('whiteboard-canvas');
+    const ctx = canvas.getContext('2d');
+    const clearBtn = document.getElementById('clear-canvas');
+    const toolSlider = document.getElementById('tool-slider');
+
+    let activeTool = 'draw'; 
+    let isDrawing = false;
+
+    toolSlider.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (activeTool === 'draw') {
+        activeTool = 'text';
+        toolSlider.classList.add('text-mode');
+      } else {
+        activeTool = 'draw';
+        toolSlider.classList.remove('text-mode');
+      }
+    });
+
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      if (!container) return;
+
+      const newWidth = container.clientWidth;
+      const newHeight = container.clientHeight;
+
+      if (canvas.width === newWidth && canvas.height === newHeight) return;
+
+      const tempImgData = canvas.toDataURL();
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+
+      ctx.strokeStyle = '#ff7675';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (tempImgData && tempImgData !== "data:,") {
+        const img = new Image();
+        img.onload = function() {
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+        };
+        img.src = tempImgData;
+      } else {
+        loadCanvasData();
+      }
+    }
+
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) * (canvas.width / rect.width),
+        y: (clientY - rect.top) * (canvas.height / rect.height)
+      };
+    }
+
+    function startDraw(e) {
+      const pos = getMousePos(e);
+      if (activeTool === 'draw') {
+        isDrawing = true;
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      } else if (activeTool === 'text') {
+        e.stopPropagation();
+        const userInput = prompt("請輸入想寫在白板上的文字 ✍️：");
+        if (userInput) {
+          ctx.font = "bold 13px 'Noto Sans TC', sans-serif";
+          ctx.fillStyle = '#ff7675';
+          ctx.fillText(userInput, pos.x, pos.y);
+          saveCanvasData();
+        }
+      }
+      e.preventDefault();
+    }
+
+    function draw(e) {
+      if (!isDrawing || activeTool !== 'draw') return;
+      const pos = getMousePos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      e.preventDefault();
+    }
+
+    function stopDraw() {
+      if (!isDrawing) return;
+      isDrawing = false;
+      saveCanvasData();
+    }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+
+    clearBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      saveCanvasData();
+    });
+
+    function saveCanvasData() {
+      localStorage.setItem('whiteboard_integrated', canvas.toDataURL());
+    }
+
+    function loadCanvasData() {
+      const savedDoodle = localStorage.getItem('whiteboard_integrated');
+      if (savedDoodle) {
+        const img = new Image();
+        img.onload = function() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+        img.src = savedDoodle;
+      }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', () => {
+      resizeCanvas();
+      setTimeout(resizeCanvas, 300); 
+    });
+
+
+    // --- 4. 初始化地圖 ---
+    const map = L.map('map').setView([23.6, 121.0], 8);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+
+    // --- 5. 頁面拖曳拉伸功能 (包含左右滑軌與頂部 Header 拉伸) ---
+    const resizer = document.getElementById('drag-bar');
+    const sidebar = document.getElementById('sidebar-container');
+    const mapContainer = document.getElementById('map');
+    
+    const headerResizer = document.getElementById('header-drag-bar');
+    const mainHeader = document.getElementById('main-header');
+    
+    let isDraggingSidebar = false;
+    let isDraggingHeader = false;
+
+    function initResizers() {
+      const startDragSidebar = (e) => {
+        isDraggingSidebar = true;
+        resizer.classList.add('dragging');
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = window.innerWidth > 860 ? 'col-resize' : 'row-resize';
+      };
+
+      const startDragHeader = (e) => {
+        isDraggingHeader = true;
+        headerResizer.classList.add('dragging');
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'row-resize';
+      };
+
+      const doDrag = (e) => {
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        if (isDraggingSidebar) {
+          if (window.innerWidth > 860) {
+            const containerWidth = window.innerWidth;
+            const newSidebarWidth = containerWidth - clientX;
+            if (newSidebarWidth > 200 && newSidebarWidth < containerWidth * 0.7) {
+              sidebar.style.width = `${newSidebarWidth}px`;
+            }
+          } else {
+            const headerHeight = mainHeader.clientHeight;
+            const containerHeight = window.innerHeight - headerHeight;
+            const relativeY = clientY - headerHeight;
+            const newMapHeightPercent = (relativeY / containerHeight) * 100;
+            const newSidebarHeightPercent = 100 - newMapHeightPercent;
+
+            if (newSidebarHeightPercent > 15 && newMapHeightPercent > 15) {
+              mapContainer.style.height = `${newMapHeightPercent}%`;
+              sidebar.style.height = `${newSidebarHeightPercent}%`;
+            }
+          }
+          map.invalidateSize();
+        }
+
+        if (isDraggingHeader) {
+          const newHeaderHeight = clientY;
+          if (newHeaderHeight >= 76 && newHeaderHeight <= 400) {
+            document.documentElement.style.setProperty('--header-height', `${newHeaderHeight}px`);
+          }
+          map.invalidateSize();
+        }
+      };
+
+      const stopDrag = () => {
+        if (isDraggingSidebar) {
+          isDraggingSidebar = false;
+          resizer.classList.remove('dragging');
+          map.invalidateSize();
+        }
+        if (isDraggingHeader) {
+          isDraggingHeader = false;
+          headerResizer.classList.remove('dragging');
+          map.invalidateSize();
+        }
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+      };
+
+      resizer.addEventListener('mousedown', startDragSidebar);
+      resizer.addEventListener('touchstart', startDragSidebar);
+
+      headerResizer.addEventListener('mousedown', startDragHeader);
+      headerResizer.addEventListener('touchstart', startDragHeader);
+
+      document.addEventListener('mousemove', doDrag);
+      document.addEventListener('mouseup', stopDrag);
+      document.addEventListener('touchmove', doDrag, { passive: false });
+      document.addEventListener('touchend', stopDrag);
+    }
+
+    initResizers();
+
+
+    // --- 6. 資料庫 (LocalStorage) ---
+    let selectedLatLng = null;
+    let selectedLocationText = ""; 
+    let milestones = JSON.parse(localStorage.getItem('milestones')) || [];
+    let nextTrip = JSON.parse(localStorage.getItem('nextTrip')) || {
+      title: "下一次的旅行",
+      date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    };
+
+
+    // --- 7. 點擊地圖事件 + 免費地理反查 API ---
+    map.on('click', function(e) {
+      selectedLatLng = e.latlng;
+      const inputField = document.getElementById('location-name');
+      
+      inputField.value = "尋找地名中... ⏳";
+      selectedLocationText = "";
+
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${selectedLatLng.lat}&lon=${selectedLatLng.lng}&accept-language=zh-TW`;
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.address) {
+            const addr = data.address;
+            const country = addr.country || "";
+            const state = addr.state || addr.province || addr.city || "";
+            const sub = addr.county || addr.suburb || addr.town || "";
+            
+            let parsedName = [country, state, sub].filter(Boolean).join(', ');
+            const parts = parsedName.split(', ');
+            if (parts.length > 2) {
+              parsedName = parts.slice(0, 2).join(', ');
+            }
+
+            selectedLocationText = parsedName || `${selectedLatLng.lat.toFixed(3)}, ${selectedLatLng.lng.toFixed(3)}`;
+            inputField.value = selectedLocationText;
+          } else {
+            fallbackCoords();
+          }
+        })
+        .catch(err => {
+          console.error("地名反查失敗:", err);
+          fallbackCoords();
+        });
+
+      function fallbackCoords() {
+        selectedLocationText = `${selectedLatLng.lat.toFixed(4)}, ${selectedLatLng.lng.toFixed(4)}`;
+        inputField.value = selectedLocationText;
+      }
+    });
+
+
+    // --- 8. 渲染地標 ---
+    function renderMarkers() {
+      map.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+          map.removeLayer(layer);
+        }
+      });
+
+      const heartIcon = L.divIcon({
+        html: `<div style="font-size: 24px; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.3));">💖</div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+
+      milestones.forEach((item) => {
+        const marker = L.marker([item.lat, item.lng], { icon: heartIcon }).addTo(map);
+        const popupContent = `
+          <div class="popup-card">
+            <img class="popup-img" src="${item.img}" alt="${item.title.replace(/"/g, '&quot;')}" />
+            <div class="popup-title">${item.title}</div>
+            <div class="popup-date">📅 ${item.date}</div>
+            <div style="font-size: 0.75rem; color: #74b9ff; margin-bottom: 5px;">📍 ${item.locationText || '未知地點'}</div>
+            <div class="popup-desc">${item.desc}</div>
+          </div>
+        `;
+        marker.bindPopup(popupContent, { className: 'custom-popup' });
+      });
+    }
+
+
+    // --- 9. 渲染回憶時光軸 ---
+    function renderTimeline() {
+      const timelineList = document.getElementById('timeline-list');
+      timelineList.innerHTML = '';
+
+      if (milestones.length === 0) {
+        timelineList.innerHTML = `
+          <div style="text-align: center; color: #b2bec3; padding: 50px 0;">
+            <h3>這裡還空空的唷～</h3>
+            <p style="margin-top: 10px;">快回到「地圖」點擊新增第一個紀念日吧！🎒</p>
+          </div>
+        `;
+        return;
+      }
+
+      const sortedMilestones = [...milestones].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sortedMilestones.forEach(item => {
+        const itemHtml = `
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="card">
+              
+              <div class="card-actions">
+                <button class="action-btn btn-edit" onclick="editMilestone(${item.id})" title="編輯這個回憶">✏️</button>
+                <button class="action-btn btn-delete" onclick="deleteMilestone(${item.id})" title="刪除這個回憶">🗑️</button>
+              </div>
+
+              <img class="card-img" src="${item.img}" alt="${item.title.replace(/"/g, '&quot;')}" />
+              <div class="card-content">
+                <div>
+                  <div class="card-title">${item.title}</div>
+                  <div class="card-date">📅 ${item.date}</div>
+                  <div style="font-size: 0.8rem; color: #74b9ff; font-weight: bold; margin-bottom: 8px;">📍 ${item.locationText || '未知地點'}</div>
+                  <p class="card-desc">${item.desc}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        timelineList.insertAdjacentHTML('beforeend', itemHtml);
+      });
+    }
+
+
+    // --- 10. 編輯與刪除 ---
+    function editMilestone(id) {
+      const index = milestones.findIndex(item => item.id === id);
+      if (index === -1) return;
+
+      const item = milestones[index];
+
+      const newTitle = prompt("修改地點/活動名稱：", item.title);
+      if (newTitle === null) return;
+      
+      const newDate = prompt("修改紀念日期 (格式：YYYY-MM-DD)：", item.date);
+      if (newDate === null) return;
+
+      const newLocation = prompt("修改國家 / 地區名稱：", item.locationText || "");
+      if (newLocation === null) return;
+
+      const newDesc = prompt("修改當時的回憶：", item.desc);
+      if (newDesc === null) return;
+
+      milestones[index].title = newTitle;
+      milestones[index].date = newDate;
+      milestones[index].locationText = newLocation;
+      milestones[index].desc = newDesc;
+
+      localStorage.setItem('milestones', JSON.stringify(milestones));
+      
+      renderMarkers();
+      renderTimeline();
+      alert("回憶修改成功囉！💝");
+    }
+
+    function deleteMilestone(id) {
+      const confirmDelete = confirm("你確定要刪除這個珍貴的回憶嗎？（地標也會一併刪除喔）");
+      if (!confirmDelete) return;
+
+      milestones = milestones.filter(item => item.id !== id);
+      localStorage.setItem('milestones', JSON.stringify(milestones));
+
+      renderMarkers();
+      renderTimeline();
+    }
+
+
+    // --- 11. 新增回憶表單 ---
+    const form = document.getElementById('milestone-form');
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      if (!selectedLatLng) {
+        alert('請先在左邊地圖上點選一個位置喔！');
+        return;
+      }
+      
+      if (document.getElementById('location-name').value === "尋找地名中... ⏳") {
+        alert('請稍等一秒，等系統確認完地區名稱再提交喔！');
+        return;
+      }
+
+      const fileInput = document.getElementById('image-input');
+      const file = fileInput.files[0];
+
+      const saveMilestone = (imageDataUrl) => {
+        const newMilestone = {
+          id: Date.now(),
+          lat: selectedLatLng.lat,
+          lng: selectedLatLng.lng,
+          locationText: selectedLocationText, 
+          title: document.getElementById('title').value,
+          date: document.getElementById('date').value,
+          desc: document.getElementById('desc').value,
+          img: imageDataUrl
+        };
+
+        milestones.push(newMilestone);
+        localStorage.setItem('milestones', JSON.stringify(milestones));
+
+        renderMarkers();
+        form.reset();
+        selectedLatLng = null;
+        selectedLocationText = "";
+        alert('成功留下一個美麗的紀念印記！🎒');
+      };
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          saveMilestone(event.target.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const defaultPlaceholderSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="280" height="200" viewBox="0 0 280 200" style="background:%23ffeaa7;"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="64">💖</text></svg>';
+        saveMilestone(defaultPlaceholderSvg);
+      }
+    });
+
+
+    // --- 12. 倒數計時邏輯 ---
+    function updateCountdown() {
+      document.getElementById('countdown-title').innerText = `距離【${nextTrip.title}】`;
+      
+      const targetDate = new Date(nextTrip.date + "T00:00:00");
+      const now = new Date();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        document.getElementById('countdown-display').innerText = "就是今天！🎉";
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      document.getElementById('countdown-display').innerText = `${days}天 ${hours}時 ${minutes}分 ${seconds}秒`;
+    }
+
+    document.getElementById('countdown-setup').addEventListener('click', function(e) {
+      e.stopPropagation();
+      const newTitle = prompt("請輸入下一次旅行的目的地 / 活動：", nextTrip.title);
+      if (!newTitle) return;
+      const newDate = prompt("請輸入日期 (格式：YYYY-MM-DD)：", nextTrip.date);
+      if (!newDate) return;
+
+      nextTrip = { title: newTitle, date: newDate };
+      localStorage.setItem('nextTrip', JSON.stringify(nextTrip));
+      updateCountdown();
+    });
+
+    setInterval(updateCountdown, 1000);
+
+
+    // --- 13. 初始化載入 ---
+    renderMarkers();
+    updateCountdown();
+    startCarousel();
+  </script>
+</body>
+</html>
