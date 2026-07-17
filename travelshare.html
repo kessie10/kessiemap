@@ -23,7 +23,6 @@
       --dark-color: #2d3436;
       --light-color: #f9f9f9;
       --transition-speed: 0.6s;
-      /* 定義頂部 Header 的初始高度變數 */
       --header-height: 80px; 
     }
 
@@ -45,7 +44,7 @@
     header {
       background: linear-gradient(135deg, var(--primary-color), #fd79a8);
       color: white;
-      padding: 10px 20px 14px 20px; /* 底部多預留一點點空間給拉伸條 */
+      padding: 10px 20px 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -56,7 +55,6 @@
       width: 100%;
       z-index: 10000;
       gap: 15px;
-      /* 使用動態高度變數，並限制最大與最小拉伸範圍 */
       height: var(--header-height);
       min-height: 76px;
       max-height: 400px; 
@@ -72,7 +70,7 @@
     /* 中間垂直滑動輪播區 */
     .header-carousel {
       flex: 1;
-      height: 100%; /* 填滿整個 Header 高度 */
+      height: 100%;
       max-width: 500px;
       margin: 0 10px;
       position: relative;
@@ -89,10 +87,9 @@
       transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
     }
 
-    /* 輪播頁面 */
     .carousel-slide {
       width: 100%;
-      height: 100%; /* 高度隨父容器拉伸 */
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -101,7 +98,6 @@
       transition: opacity 0.6s;
     }
 
-    /* 利用百分比定位兩個 Slide，確保動態高度下拉伸位移正確 */
     #slide-countdown {
       top: 0%;
     }
@@ -173,7 +169,6 @@
       cursor: crosshair;
     }
 
-    /* 左上角清除按鈕 */
     .canvas-clear-wrapper {
       position: absolute;
       left: 6px;
@@ -197,7 +192,6 @@
       transform: scale(1.05);
     }
 
-    /* 右側滑動膠囊工具切換鈕 */
     .slide-switch-wrapper {
       position: absolute;
       right: 6px;
@@ -221,7 +215,6 @@
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* 滑動背景滑塊 */
     .switch-slider {
       position: absolute;
       top: 2px;
@@ -235,7 +228,6 @@
       z-index: 1;
     }
 
-    /* 當在 text 模式時滑塊右移 */
     .tool-slide-switch.text-mode .switch-slider {
       transform: translateX(32px);
     }
@@ -246,7 +238,6 @@
       transition: transform 0.2s;
     }
 
-    /* 頂部 Header 下拉拉伸條樣式 */
     .header-resizer {
       position: absolute;
       bottom: 0;
@@ -263,7 +254,6 @@
       background: rgba(255, 255, 255, 0.5);
     }
 
-    /* 右側控制組 */
     .controls-group {
       display: flex;
       align-items: center;
@@ -352,7 +342,6 @@
     .page {
       width: 100vw;
       height: 100vh;
-      /* padding-top 改為動態使用 CSS 變數，保證與拉伸後的 Header 完美貼合 */
       padding-top: var(--header-height);
       position: relative;
     }
@@ -371,7 +360,6 @@
       min-height: 100px;
     }
 
-    /* 左右/上下拉伸滑軌 */
     .resizer {
       background-color: #ffeaa7;
       background-image: radial-gradient(var(--primary-color) 20%, transparent 20%),
@@ -413,6 +401,7 @@
       flex-direction: column;
       gap: 5px;
       margin-bottom: 10px;
+      flex: 1;
     }
 
     label {
@@ -421,7 +410,7 @@
       color: #636e72;
     }
 
-    input, textarea {
+    input, textarea, select {
       padding: 8px 12px;
       border: 1px solid #dfe6e9;
       border-radius: 8px;
@@ -429,7 +418,7 @@
       outline: none;
     }
 
-    input:focus, textarea:focus {
+    input:focus, textarea:focus, select:focus {
       border-color: var(--primary-color);
     }
 
@@ -452,7 +441,6 @@
     #gallery-page {
       background: #fcf8f8;
       overflow-y: auto;
-      /* 頂部 padding 配合動態 Header 高度 */
       padding: calc(var(--header-height) + 20px) 20px 40px 20px;
     }
 
@@ -556,6 +544,7 @@
       right: 15px;
       display: flex;
       gap: 8px;
+      z-index: 99;
     }
 
     .action-btn {
@@ -627,7 +616,7 @@
       header {
         flex-direction: column;
         height: auto;
-        min-height: 170px; /* 手機版初始高度更高 */
+        min-height: 170px;
         max-height: 500px;
         padding: 10px;
         gap: 8px;
@@ -638,7 +627,6 @@
         max-width: 100%;
       }
       .page {
-        /* 手機版同樣使用動態計算 */
         padding-top: var(--header-height);
       }
       #map-page {
@@ -673,7 +661,7 @@
 
   <!-- 頂部導航 -->
   <header id="main-header">
-    <h1>Kessie Map :D </h1>
+    <h1>Kessie Map :D</h1>
     
     <!-- 中間垂直滑動輪播區 -->
     <div class="header-carousel">
@@ -769,7 +757,7 @@
             </div>
             <div class="form-group">
               <label>當時的回憶</label>
-              <textarea id="desc" rows="5" placeholder=" 有咩想講! 🥰" required></textarea>
+              <textarea id="desc" rows="4" placeholder=" 有咩想講! 🥰" required></textarea>
             </div>
             <button type="submit" class="btn" style="width: 100%;">💘 提交 ✨</button>
           </form>
@@ -806,11 +794,9 @@
       if (pageIndex === 1) renderTimeline();
     }
 
-    // 動態偵測 Header 高度，同步寫入 CSS 變數供頁面 Padding 使用
     const resizeObserver = new ResizeObserver(entries => {
       for (let entry of entries) {
         const headerHeight = entry.target.clientHeight;
-        // 將實際渲染出的 Header 高度寫入 CSS root 變數，完美解決拉伸後內容重疊問題
         document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
         if (typeof resizeCanvas === 'function') {
           resizeCanvas();
@@ -830,7 +816,6 @@
 
     toggleCountdown.checked = isCountdownOn;
 
-    // 將輪播位移計算改為「百分比 (%)」位移，不受拉伸時的固定像素影響
     function startCarousel() {
       stopCarousel();
       if (isCountdownOn) {
@@ -999,12 +984,11 @@
     }).addTo(map);
 
 
-    // --- 4.5 頁面拖曳拉伸功能 (包含左右滑軌與全新的頂部 Header 拉伸) ---
+    // --- 4.5 頁面拖曳拉伸功能 ---
     const resizer = document.getElementById('drag-bar');
     const sidebar = document.getElementById('sidebar-container');
     const mapContainer = document.getElementById('map');
     
-    // 頂部拉伸控制 DOM
     const headerResizer = document.getElementById('header-drag-bar');
     const mainHeader = document.getElementById('main-header');
     
@@ -1012,7 +996,6 @@
     let isDraggingHeader = false;
 
     function initResizers() {
-      // --- 1. 原本的左右/上下側邊欄拉伸 ---
       const startDragSidebar = (e) => {
         isDraggingSidebar = true;
         resizer.classList.add('dragging');
@@ -1020,7 +1003,6 @@
         document.body.style.cursor = window.innerWidth > 860 ? 'col-resize' : 'row-resize';
       };
 
-      // --- 2. 頂部 Header 上下拉伸 ---
       const startDragHeader = (e) => {
         isDraggingHeader = true;
         headerResizer.classList.add('dragging');
@@ -1028,12 +1010,10 @@
         document.body.style.cursor = 'row-resize';
       };
 
-      // 拖曳進行中
       const doDrag = (e) => {
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-        // 處理側邊欄拖曳
         if (isDraggingSidebar) {
           if (window.innerWidth > 860) {
             const containerWidth = window.innerWidth;
@@ -1056,10 +1036,8 @@
           map.invalidateSize();
         }
 
-        // 處理頂部導航欄 (Header & Canvas) 手動上下拉伸
         if (isDraggingHeader) {
           const newHeaderHeight = clientY;
-          // 限制高度在 76px 至 400px 之間，避免拉太小崩壞或拉太大擋住整面
           if (newHeaderHeight >= 76 && newHeaderHeight <= 400) {
             document.documentElement.style.setProperty('--header-height', `${newHeaderHeight}px`);
           }
@@ -1067,7 +1045,6 @@
         }
       };
 
-      // 結束拖曳
       const stopDrag = () => {
         if (isDraggingSidebar) {
           isDraggingSidebar = false;
@@ -1083,15 +1060,12 @@
         document.body.style.cursor = '';
       };
 
-      // 側邊欄事件綁定
       resizer.addEventListener('mousedown', startDragSidebar);
       resizer.addEventListener('touchstart', startDragSidebar);
 
-      // 頂部 Header 拉伸事件綁定
       headerResizer.addEventListener('mousedown', startDragHeader);
       headerResizer.addEventListener('touchstart', startDragHeader);
 
-      // 全局移動與放開監聽
       document.addEventListener('mousemove', doDrag);
       document.addEventListener('mouseup', stopDrag);
       document.addEventListener('touchmove', doDrag, { passive: false });
@@ -1112,6 +1086,14 @@
       date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     };
 
+    // 隨機產生可愛色系與表情符號庫
+    const PRESET_COLORS = ["#ffeaa7", "#fab1a0", "#ff7675", "#fd79a8", "#a29bfe", "#74b9ff", "#81ecec", "#55efc4", "#ffe3e3", "#dff9fb"];
+    const PRESET_EMOJIS = ["💖", "🥰", "✈️", "🗺️", "👫", "📸", "🍨", "🌸", "🍕", "🧸", "🎡", "🍿", "🐾", "🎈", "⭐️"];
+
+    function getRandomElement(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
     // 從 Google 試算表載入數據
     async function loadMilestonesFromCloud() {
       if (!GOOGLE_SCRIPT_URL) {
@@ -1123,7 +1105,6 @@
         if (!response.ok) throw new Error("網路連線異常");
         milestones = await response.json();
         
-        // 確保經緯度座標被正確解析成數值
         milestones.forEach(m => {
           m.lat = parseFloat(m.lat);
           m.lng = parseFloat(m.lng);
@@ -1180,6 +1161,33 @@
     });
 
 
+    // Helper: 產生乾淨安全的 SVG Data URL
+    function generatePlaceholderSvg(bgColor, emoji) {
+      const cleanBg = bgColor.replace('#', '%23');
+      return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='200' viewBox='0 0 280 200' style='background:${cleanBg};'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='64'>${emoji}</text></svg>`;
+    }
+
+    // Helper: 從 SVG 中提取出背景色及 emoji
+    function parsePlaceholderSvg(svgStr) {
+      const result = { color: '#ffeaa7', emoji: '💖' };
+      if (!svgStr || !svgStr.startsWith('data:image/svg+xml')) return result;
+      
+      try {
+        const bgMatch = svgStr.match(/background:([^;']+)/);
+        if (bgMatch && bgMatch[1]) {
+          result.color = bgMatch[1].replace('%23', '#');
+        }
+        const emojiMatch = svgStr.match(/<text[^>]*>([^<]+)<\/text>/);
+        if (emojiMatch && emojiMatch[1]) {
+          result.emoji = emojiMatch[1];
+        }
+      } catch(e) {
+        console.error("解析預設 SVG 發生錯誤", e);
+      }
+      return result;
+    }
+
+
     // --- 7. 渲染地標 ---
     function renderMarkers() {
       map.eachLayer((layer) => {
@@ -1196,9 +1204,15 @@
 
       milestones.forEach((item) => {
         const marker = L.marker([item.lat, item.lng], { icon: heartIcon }).addTo(map);
+        
+        const isPlaceholder = item.img.startsWith('data:image/svg+xml') || item.img.includes('<svg');
+        const popupImgHtml = isPlaceholder 
+          ? `<div style="width:100%; height:140px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-bottom:8px; background:${parsePlaceholderSvg(item.img).color}; font-size:48px;">${parsePlaceholderSvg(item.img).emoji}</div>`
+          : `<img class="popup-img" src="${item.img}" alt="${item.title.replace(/"/g, '&quot;')}" />`;
+
         const popupContent = `
           <div class="popup-card">
-            <img class="popup-img" src="${item.img}" alt="${item.title.replace(/"/g, '&quot;')}" />
+            ${popupImgHtml}
             <div class="popup-title">${item.title}</div>
             <div class="popup-date">📅 ${item.date}</div>
             <div style="font-size: 0.75rem; color: #74b9ff; margin-bottom: 5px;">📍 ${item.locationText || '未知地點'}</div>
@@ -1228,6 +1242,12 @@
       const sortedMilestones = [...milestones].sort((a, b) => new Date(b.date) - new Date(a.date));
 
       sortedMilestones.forEach(item => {
+        const isPlaceholder = item.img.startsWith('data:image/svg+xml') || item.img.includes('<svg');
+        
+        const imgHtml = isPlaceholder 
+          ? `<div class="card-img" style="background:${parsePlaceholderSvg(item.img).color}; display:flex; align-items:center; justify-content:center; font-size:64px;">${parsePlaceholderSvg(item.img).emoji}</div>`
+          : `<img class="card-img" src="${item.img}" alt="${item.title.replace(/"/g, '&quot;')}" />`;
+
         const itemHtml = `
           <div class="timeline-item">
             <div class="timeline-dot"></div>
@@ -1238,7 +1258,7 @@
                 <button class="action-btn btn-delete" onclick="deleteMilestone(${item.id})" title="刪除這個回憶">🗑️</button>
               </div>
 
-              <img class="card-img" src="${item.img}" alt="${item.title.replace(/"/g, '&quot;')}" />
+              ${imgHtml}
               <div class="card-content">
                 <div>
                   <div class="card-title">${item.title}</div>
@@ -1279,13 +1299,28 @@
       const newDesc = prompt("修改當時的回憶：", item.desc);
       if (newDesc === null) return;
 
+      // 只有在是 placeholder SVG 時才可以編輯背景顏色跟表情！
+      let newImg = item.img;
+      const isPlaceholder = item.img.startsWith('data:image/svg+xml') || item.img.includes('<svg');
+      if (isPlaceholder) {
+        const currentSettings = parsePlaceholderSvg(item.img);
+        const newColor = prompt("修改卡片背景顏色 (十六進制，如 #fab1a0 或 #ffeaa7)：", currentSettings.color);
+        if (newColor === null) return;
+
+        const newEmoji = prompt("修改顯示的 Emoji：", currentSettings.emoji);
+        if (newEmoji === null) return;
+
+        newImg = generatePlaceholderSvg(newColor, newEmoji);
+      }
+
       const updatedData = {
         action: 'edit',
         id: id,
         title: newTitle,
         date: newDate,
         locationText: newLocation,
-        desc: newDesc
+        desc: newDesc,
+        img: newImg
       };
 
       try {
@@ -1300,6 +1335,7 @@
           milestones[index].date = newDate;
           milestones[index].locationText = newLocation;
           milestones[index].desc = newDesc;
+          milestones[index].img = newImg;
 
           renderMarkers();
           renderTimeline();
@@ -1360,7 +1396,7 @@
       }
       
       if (document.getElementById('location-name').value === "尋找地名中... ⏳") {
-        alert('請稍等一秒，等系統確認完地區名稱再提交喔！');
+        alert('請稍等！');
         return;
       }
 
@@ -1381,7 +1417,7 @@
 
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerText;
-        submitBtn.innerText = "上傳雲端中... ☁️";
+        submitBtn.innerText = "上傳中... ☁️";
         submitBtn.disabled = true;
 
         try {
@@ -1397,7 +1433,7 @@
             form.reset();
             selectedLatLng = null;
             selectedLocationText = "";
-            alert('成功將回憶留存到雲端！🎒💖');
+            alert('Wowww 成功將回憶留存到雲端！🎒💖');
           } else {
             throw new Error("雲端寫入失敗");
           }
@@ -1417,8 +1453,11 @@
         };
         reader.readAsDataURL(file);
       } else {
-        const defaultPlaceholderSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="280" height="200" viewBox="0 0 280 200" style="background:%23ffeaa7;"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="64">💖</text></svg>';
-        saveMilestone(defaultPlaceholderSvg);
+        // 沒有相片時：自動派發隨機色系與表情符號！
+        const randomColor = getRandomElement(PRESET_COLORS);
+        const randomEmoji = getRandomElement(PRESET_EMOJIS);
+        const customSvg = generatePlaceholderSvg(randomColor, randomEmoji);
+        saveMilestone(customSvg);
       }
     });
 
