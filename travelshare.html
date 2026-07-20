@@ -57,7 +57,7 @@
       gap: 15px;
       height: var(--header-height);
       min-height: 76px;
-      max-height: 400px; 
+      max-height: 450px; 
     }
 
     h1 {
@@ -167,6 +167,7 @@
       height: 100%;
       display: block;
       cursor: crosshair;
+      touch-action: none; 
     }
 
     .canvas-clear-wrapper {
@@ -615,9 +616,6 @@
     @media (max-width: 860px) {
       header {
         flex-direction: column;
-        height: auto;
-        min-height: 170px;
-        max-height: 500px;
         padding: 10px;
         gap: 8px;
       }
@@ -667,7 +665,7 @@
     <div class="header-carousel">
       <div class="carousel-inner" id="carousel-inner">
         
-        <!-- Slide 1: 距離下次旅行倒數 -->
+        <!-- Slide 1: 旅行倒數 -->
         <div class="carousel-slide" id="slide-countdown">
           <div class="countdown-inline-container">
             <span id="countdown-title">距離下一次旅行</span>
@@ -676,20 +674,14 @@
           </div>
         </div>
 
-        <!-- Slide 2: 悄悄話二合一白板 -->
+        <!-- Slide 2: 悄悄話白板 -->
         <div class="carousel-slide" id="slide-whiteboard">
           <div class="whiteboard-container">
             <div class="canvas-wrapper" id="canvas-container">
-              
-              <!-- 清除按鈕 -->
               <div class="canvas-clear-wrapper">
                 <button class="clear-btn" id="clear-canvas" title="清除全部">🧹 清除</button>
               </div>
-
-              <!-- 畫布區 -->
               <canvas id="whiteboard-canvas"></canvas>
-              
-              <!-- 滑動膠囊工具切換鈕 -->
               <div class="slide-switch-wrapper">
                 <div class="tool-slide-switch" id="tool-slider">
                   <div class="switch-slider"></div>
@@ -697,7 +689,6 @@
                   <span class="switch-label">🔤</span>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -711,32 +702,27 @@
         <button class="nav-btn active" onclick="switchPage(0)">🗺️ 地圖</button>
         <button class="nav-btn" onclick="switchPage(1)">📖 回憶牆</button>
       </div>
-      
-      <!-- 下次旅行倒數開關 -->
       <label class="switch" title="開啟/關閉旅行倒數輪播">
         <input type="checkbox" id="toggle-countdown" checked>
         <span class="slider"></span>
       </label>
     </div>
 
-    <!-- 頂部下拉手動拉伸滑軌 -->
     <div class="header-resizer" id="header-drag-bar" title="上下拖曳拉伸白板與導航欄"></div>
   </header>
 
   <!-- 頁面滑動容器 -->
   <div class="slider-container" id="slider-container">
     
-    <!-- PAGE 1: 紀念日地圖 -->
+    <!-- PAGE 1: 地圖 -->
     <div class="page" id="map-page">
       <div id="map"></div>
-      
-      <!-- 拖曳拉伸滑軌 -->
       <div class="resizer" id="drag-bar"></div>
       
       <div class="sidebar" id="sidebar-container">
         <div>
           <h3>📍 記錄新回憶</h3>
-          <p style="font-size: 0.75rem; color: #b2bec3; margin: 5px 0;">點擊地圖任意位置，系統將自動生成國家與地區</p>
+          <p style="font-size: 0.75rem; color: #b2bec3; margin: 5px 0;">點擊地圖任意位置，系統將自動精確識別香港18區</p>
           
           <form id="milestone-form">
             <div class="form-group">
@@ -769,9 +755,7 @@
     <div class="page" id="gallery-page">
       <div class="gallery-container">
         <h2 class="section-title">💖 快樂小時光 💖</h2>
-        <div class="timeline" id="timeline-list">
-          <!-- JS 動態渲染 -->
-        </div>
+        <div class="timeline" id="timeline-list"></div>
       </div>
     </div>
 
@@ -781,6 +765,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
+    // 初始化設定高度
+    const isMobileDevice = window.innerWidth <= 860;
+    const initialHeaderHeight = isMobileDevice ? 190 : 80;
+    document.documentElement.style.setProperty('--header-height', `${initialHeaderHeight}px`);
+
     // --- 1. 頁面切換 ---
     const slider = document.getElementById('slider-container');
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -798,18 +787,15 @@
       for (let entry of entries) {
         const headerHeight = entry.target.clientHeight;
         document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
-        if (typeof resizeCanvas === 'function') {
-          resizeCanvas();
-        }
+        if (typeof resizeCanvas === 'function') resizeCanvas();
       }
     });
     resizeObserver.observe(document.getElementById('main-header'));
 
 
-    // --- 2. 輪播控制與倒數計時開關 (10秒滑動一次) ---
+    // --- 2. 輪播控制 ---
     const carouselInner = document.getElementById('carousel-inner');
     const toggleCountdown = document.getElementById('toggle-countdown');
-    
     let carouselInterval = null;
     let currentSlide = 0; 
     let isCountdownOn = localStorage.getItem('countdown_enabled') !== 'false';
@@ -847,7 +833,7 @@
     });
 
 
-    // --- 3. 整合式二合一白板邏輯 ---
+    // --- 3. 白板邏輯 ---
     const canvas = document.getElementById('whiteboard-canvas');
     const ctx = canvas.getContext('2d');
     const clearBtn = document.getElementById('clear-canvas');
@@ -873,7 +859,6 @@
 
       const newWidth = container.clientWidth;
       const newHeight = container.clientHeight;
-
       if (canvas.width === newWidth && canvas.height === newHeight) return;
 
       const tempImgData = canvas.toDataURL();
@@ -887,9 +872,7 @@
 
       if (tempImgData && tempImgData !== "data:,") {
         const img = new Image();
-        img.onload = function() {
-          ctx.drawImage(img, 0, 0, newWidth, newHeight);
-        };
+        img.onload = function() { ctx.drawImage(img, 0, 0, newWidth, newHeight); };
         img.src = tempImgData;
       } else {
         loadCanvasData();
@@ -922,7 +905,7 @@
           saveCanvasData();
         }
       }
-      e.preventDefault();
+      if (e.cancelable) e.preventDefault();
     }
 
     function draw(e) {
@@ -930,7 +913,7 @@
       const pos = getMousePos(e);
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
-      e.preventDefault();
+      if (e.cancelable) e.preventDefault();
     }
 
     function stopDraw() {
@@ -943,7 +926,6 @@
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDraw);
     canvas.addEventListener('mouseleave', stopDraw);
-
     canvas.addEventListener('touchstart', startDraw, { passive: false });
     canvas.addEventListener('touchmove', draw, { passive: false });
     canvas.addEventListener('touchend', stopDraw);
@@ -954,10 +936,7 @@
       saveCanvasData();
     });
 
-    function saveCanvasData() {
-      localStorage.setItem('whiteboard_integrated', canvas.toDataURL());
-    }
-
+    function saveCanvasData() { localStorage.setItem('whiteboard_integrated', canvas.toDataURL()); }
     function loadCanvasData() {
       const savedDoodle = localStorage.getItem('whiteboard_integrated');
       if (savedDoodle) {
@@ -971,24 +950,20 @@
     }
 
     window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('load', () => {
-      resizeCanvas();
-      setTimeout(resizeCanvas, 300); 
-    });
+    window.addEventListener('load', () => { resizeCanvas(); setTimeout(resizeCanvas, 300); });
 
 
-    // --- 4. 初始化地圖 ---
-    const map = L.map('map').setView([23.6, 121.0], 8);
+    // --- 4. 初始化地圖 (香港中心) ---
+    const map = L.map('map').setView([22.3193, 114.1694], 11);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
 
-    // --- 4.5 頁面拖曳拉伸功能 ---
+    // --- 5. 拖曳拉伸功能 ---
     const resizer = document.getElementById('drag-bar');
     const sidebar = document.getElementById('sidebar-container');
     const mapContainer = document.getElementById('map');
-    
     const headerResizer = document.getElementById('header-drag-bar');
     const mainHeader = document.getElementById('main-header');
     
@@ -1038,7 +1013,8 @@
 
         if (isDraggingHeader) {
           const newHeaderHeight = clientY;
-          if (newHeaderHeight >= 76 && newHeaderHeight <= 400) {
+          const minH = window.innerWidth <= 860 ? 170 : 76;
+          if (newHeaderHeight >= minH && newHeaderHeight <= 450) {
             document.documentElement.style.setProperty('--header-height', `${newHeaderHeight}px`);
           }
           map.invalidateSize();
@@ -1046,36 +1022,24 @@
       };
 
       const stopDrag = () => {
-        if (isDraggingSidebar) {
-          isDraggingSidebar = false;
-          resizer.classList.remove('dragging');
-          map.invalidateSize();
-        }
-        if (isDraggingHeader) {
-          isDraggingHeader = false;
-          headerResizer.classList.remove('dragging');
-          map.invalidateSize();
-        }
-        document.body.style.userSelect = '';
-        document.body.style.cursor = '';
+        if (isDraggingSidebar) { isDraggingSidebar = false; resizer.classList.remove('dragging'); map.invalidateSize(); }
+        if (isDraggingHeader) { isDraggingHeader = false; headerResizer.classList.remove('dragging'); map.invalidateSize(); }
+        document.body.style.userSelect = ''; document.body.style.cursor = '';
       };
 
       resizer.addEventListener('mousedown', startDragSidebar);
       resizer.addEventListener('touchstart', startDragSidebar);
-
       headerResizer.addEventListener('mousedown', startDragHeader);
       headerResizer.addEventListener('touchstart', startDragHeader);
-
       document.addEventListener('mousemove', doDrag);
       document.addEventListener('mouseup', stopDrag);
       document.addEventListener('touchmove', doDrag, { passive: false });
       document.addEventListener('touchend', stopDrag);
     }
-
     initResizers();
 
 
-    // --- 5. 雲端資料庫 (Google Sheets Apps Script 集成) ---
+    // --- 6. 雲端資料庫連結 ---
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydEJV7sowFAb85TxMyN2Ifx-3DVF7Z-JFLP9X2H-h0Bn5GgVMOpvWJyZF0h_euWKY2/exec"; 
 
     let selectedLatLng = null;
@@ -1086,44 +1050,74 @@
       date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     };
 
-    // 隨機產生可愛色系與表情符號庫
-    const PRESET_COLORS = ["#ffeaa7", "#fab1a0", "#ff7675", "#fd79a8", "#a29bfe", "#74b9ff", "#81ecec", "#55efc4", "#ffe3e3", "#dff9fb"];
-    const PRESET_EMOJIS = ["💖", "🥰", "✈️", "🗺️", "👫", "📸", "🍨", "🌸", "🍕", "🧸", "🎡", "🍿", "🐾", "🎈", "⭐️"];
+    const PRESET_COLORS = ["#ffeaa7", "#fab1a0", "#ff7675", "#fd79a8", "#a29bfe", "#74b9ff", "#81ecec", "#55efc4", "#ffe3e3"];
+    const PRESET_EMOJIS = ["💖", "🥰", "✈️", "🗺️", "👫", "📸", "🍨", "🌸", "🧸", "🎡"];
 
-    function getRandomElement(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
+    function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-    // 從 Google 試算表載入數據
     async function loadMilestonesFromCloud() {
-      if (!GOOGLE_SCRIPT_URL) {
-        console.warn("尚未填寫 GOOGLE_SCRIPT_URL，地圖目前將不會載入雲端數據。");
-        return;
-      }
+      if (!GOOGLE_SCRIPT_URL) return;
       try {
         const response = await fetch(GOOGLE_SCRIPT_URL);
         if (!response.ok) throw new Error("網路連線異常");
         milestones = await response.json();
-        
-        milestones.forEach(m => {
-          m.lat = parseFloat(m.lat);
-          m.lng = parseFloat(m.lng);
-        });
-
+        milestones.forEach(m => { m.lat = parseFloat(m.lat); m.lng = parseFloat(m.lng); });
         renderMarkers();
         renderTimeline();
-      } catch (error) {
-        console.error("無法從雲端載入回憶數據:", error);
-      }
+      } catch (error) { console.error("無法從雲端載入回憶數據:", error); }
     }
 
 
-    // --- 6. 點擊地圖事件 + 免費地理反查 API ---
+    // --- 7. 【核心優化】精確分辨香港 18 區的智慧型辨識演算法 ---
+    const HK_DISTRICTS = [
+      { name: "中西區", lat: 22.2819, lng: 114.1574 },
+      { name: "灣仔區", lat: 22.2796, lng: 114.1717 },
+      { name: "東區", lat: 22.2841, lng: 114.2241 },
+      { name: "南區", lat: 22.2473, lng: 114.1588 },
+      { name: "油尖旺區", lat: 22.3116, lng: 114.1707 },
+      { name: "深水埗區", lat: 22.3307, lng: 114.1622 },
+      { name: "九龍城區", lat: 22.3282, lng: 114.1916 },
+      { name: "黃大仙區", lat: 22.3422, lng: 114.1931 },
+      { name: "觀塘區", lat: 22.3133, lng: 114.2244 },
+      { name: "葵青區", lat: 22.3529, lng: 114.1261 },
+      { name: "荃灣區", lat: 22.3714, lng: 114.1141 },
+      { name: "屯門區", lat: 22.3916, lng: 113.9732 },
+      { name: "元朗區", lat: 22.4456, lng: 114.0222 },
+      { name: "北區", lat: 22.4947, lng: 114.1381 },
+      { name: "大埔區", lat: 22.4508, lng: 114.1642 },
+      { name: "沙田區", lat: 22.3832, lng: 114.1879 },
+      { name: "西貢區", lat: 22.3814, lng: 114.2705 },
+      { name: "離島區", lat: 22.2611, lng: 113.9461 }
+    ];
+
+    // 哈弗辛公式：精確計算地圖點擊位置到各區中心的公里數
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    // 找出最貼近的香港分區
+    function findNearestHKDistrict(lat, lng) {
+      let minDst = Infinity;
+      let closestDistrict = "香港";
+      HK_DISTRICTS.forEach(d => {
+        const dst = getDistance(lat, lng, d.lat, d.lng);
+        if (dst < minDst) { minDst = dst; closestDistrict = d.name; }
+      });
+      return closestDistrict;
+    }
+
     map.on('click', function(e) {
       selectedLatLng = e.latlng;
       const inputField = document.getElementById('location-name');
       
-      inputField.value = "尋找地名中... ⏳";
+      inputField.value = "精確識別分區中... ⏳";
       selectedLocationText = "";
 
       const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${selectedLatLng.lat}&lon=${selectedLatLng.lng}&accept-language=zh-TW`;
@@ -1131,84 +1125,92 @@
       fetch(url)
         .then(response => response.json())
         .then(data => {
+          let isHK = false;
+          let osmDistrict = "";
+          let detailedLocation = "";
+
           if (data && data.address) {
             const addr = data.address;
             const country = addr.country || "";
-            const state = addr.state || addr.province || addr.city || "";
-            const sub = addr.county || addr.suburb || addr.town || "";
-            
-            let parsedName = [country, state, sub].filter(Boolean).join(', ');
-            const parts = parsedName.split(', ');
-            if (parts.length > 2) {
-              parsedName = parts.slice(0, 2).join(', ');
-            }
 
-            selectedLocationText = parsedName || `${selectedLatLng.lat.toFixed(3)}, ${selectedLatLng.lng.toFixed(3)}`;
-            inputField.value = selectedLocationText;
-          } else {
-            fallbackCoords();
+            if (country === "香港" || country === "Hong Kong" || (selectedLatLng.lat > 22.15 && selectedLatLng.lat < 22.56 && selectedLatLng.lng > 113.83 && selectedLatLng.lng < 114.44)) {
+              isHK = true;
+              // 嘗試撈取所有潛在的分區標籤
+              osmDistrict = addr.suburb || addr.town || addr.county || addr.city_district || addr.district || "";
+              detailedLocation = addr.village || addr.neighbourhood || addr.road || addr.suburb || "";
+            } else {
+              // 外地正常反查
+              const state = addr.state || addr.province || addr.city || "";
+              const sub = addr.county || addr.suburb || addr.town || "";
+              selectedLocationText = [country, state, sub].filter(Boolean).join(', ');
+            }
           }
+
+          // 如果是在香港
+          if (isHK || (!data.address && selectedLatLng.lat > 22.15 && selectedLatLng.lat < 22.56)) {
+            // 如果 OSM 沒有精確提供 18 區名稱，或是被誤標成別的，啟動幾何距離計算法保底
+            let finalDistrict = osmDistrict;
+            if (!finalDistrict || !finalDistrict.includes("區")) {
+              finalDistrict = findNearestHKDistrict(selectedLatLng.lat, selectedLatLng.lng);
+            }
+            
+            let parsedName = `香港 ${finalDistrict}`;
+            if (detailedLocation && detailedLocation !== osmDistrict && !detailedLocation.includes("區") && detailedLocation !== "香港") {
+              parsedName += ` ${detailedLocation}`;
+            }
+            
+            // 清理多餘的重疊文字
+            selectedLocationText = parsedName.replace(/\s+/g, ' ').trim();
+          }
+
+          if (!selectedLocationText) { fallbackCoords(); } 
+          else { inputField.value = selectedLocationText; }
         })
-        .catch(err => {
-          console.error("地名反查失敗:", err);
-          fallbackCoords();
-        });
+        .catch(err => { console.error("地名反查失敗:", err); fallbackCoords(); });
 
       function fallbackCoords() {
-        selectedLocationText = `${selectedLatLng.lat.toFixed(4)}, ${selectedLatLng.lng.toFixed(4)}`;
+        if (selectedLatLng.lat > 22.15 && selectedLatLng.lat < 22.56 && selectedLatLng.lng > 113.83 && selectedLatLng.lng < 114.44) {
+          const matched = findNearestHKDistrict(selectedLatLng.lat, selectedLatLng.lng);
+          selectedLocationText = `香港 ${matched}`;
+        } else {
+          selectedLocationText = `${selectedLatLng.lat.toFixed(4)}, ${selectedLatLng.lng.toFixed(4)}`;
+        }
         inputField.value = selectedLocationText;
       }
     });
 
 
-    // Helper: 產生乾淨安全的 SVG Data URL
+    // --- 8. 渲染地標與時光軸 ---
     function generatePlaceholderSvg(bgColor, emoji) {
       const cleanBg = bgColor.replace('#', '%23');
       return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='200' viewBox='0 0 280 200' style='background:${cleanBg};'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='64'>${emoji}</text></svg>`;
     }
 
-    // Helper: 從 SVG 中提取出背景色及 emoji
     function parsePlaceholderSvg(svgStr) {
       const result = { color: '#ffeaa7', emoji: '💖' };
       if (!svgStr || !svgStr.startsWith('data:image/svg+xml')) return result;
-      
       try {
         const bgMatch = svgStr.match(/background:([^;']+)/);
-        if (bgMatch && bgMatch[1]) {
-          result.color = bgMatch[1].replace('%23', '#');
-        }
+        if (bgMatch && bgMatch[1]) result.color = bgMatch[1].replace('%23', '#');
         const emojiMatch = svgStr.match(/<text[^>]*>([^<]+)<\/text>/);
-        if (emojiMatch && emojiMatch[1]) {
-          result.emoji = emojiMatch[1];
-        }
-      } catch(e) {
-        console.error("解析預設 SVG 發生錯誤", e);
-      }
+        if (emojiMatch && emojiMatch[1]) result.emoji = emojiMatch[1];
+      } catch(e) {}
       return result;
     }
 
-
-    // --- 7. 渲染地標 ---
     function renderMarkers() {
-      map.eachLayer((layer) => {
-        if (layer instanceof L.Marker) {
-          map.removeLayer(layer);
-        }
-      });
-
+      map.eachLayer((layer) => { if (layer instanceof L.Marker) map.removeLayer(layer); });
       const heartIcon = L.divIcon({
         html: `<div style="font-size: 24px; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.3));">💖</div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
+        iconSize: [30, 30], iconAnchor: [15, 15]
       });
 
       milestones.forEach((item) => {
         const marker = L.marker([item.lat, item.lng], { icon: heartIcon }).addTo(map);
-        
-        const isPlaceholder = item.img.startsWith('data:image/svg+xml') || item.img.includes('<svg');
+        const isPlaceholder = item.img.startsWith('data:image/svg+xml');
         const popupImgHtml = isPlaceholder 
           ? `<div style="width:100%; height:140px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-bottom:8px; background:${parsePlaceholderSvg(item.img).color}; font-size:48px;">${parsePlaceholderSvg(item.img).emoji}</div>`
-          : `<img class="popup-img" src="${item.img}" alt="${item.title.replace(/"/g, '&quot;')}" />`;
+          : `<img class="popup-img" src="${item.img}" />`;
 
         const popupContent = `
           <div class="popup-card">
@@ -1223,41 +1225,28 @@
       });
     }
 
-
-    // --- 8. 渲染回憶時光軸 ---
     function renderTimeline() {
       const timelineList = document.getElementById('timeline-list');
       timelineList.innerHTML = '';
-
       if (milestones.length === 0) {
-        timelineList.innerHTML = `
-          <div style="text-align: center; color: #b2bec3; padding: 50px 0;">
-            <h3>這裡還空空的唷～</h3>
-            <p style="margin-top: 10px;">快回到「地圖」點擊新增第一個紀念日吧！🎒</p>
-          </div>
-        `;
+        timelineList.innerHTML = `<div style="text-align:center; color:#b2bec3; padding:50px 0;"><h3>這裡還空空的唷～</h3></div>`;
         return;
       }
-
       const sortedMilestones = [...milestones].sort((a, b) => new Date(b.date) - new Date(a.date));
-
       sortedMilestones.forEach(item => {
-        const isPlaceholder = item.img.startsWith('data:image/svg+xml') || item.img.includes('<svg');
-        
+        const isPlaceholder = item.img.startsWith('data:image/svg+xml');
         const imgHtml = isPlaceholder 
           ? `<div class="card-img" style="background:${parsePlaceholderSvg(item.img).color}; display:flex; align-items:center; justify-content:center; font-size:64px;">${parsePlaceholderSvg(item.img).emoji}</div>`
-          : `<img class="card-img" src="${item.img}" alt="${item.title.replace(/"/g, '&quot;')}" />`;
+          : `<img class="card-img" src="${item.img}" />`;
 
         const itemHtml = `
           <div class="timeline-item">
             <div class="timeline-dot"></div>
             <div class="card">
-              
               <div class="card-actions">
-                <button class="action-btn btn-edit" onclick="editMilestone(${item.id})" title="編輯這個回憶">✏️</button>
-                <button class="action-btn btn-delete" onclick="deleteMilestone(${item.id})" title="刪除這個回憶">🗑️</button>
+                <button class="action-btn btn-edit" onclick="editMilestone(${item.id})">✏️</button>
+                <button class="action-btn btn-delete" onclick="deleteMilestone(${item.id})">🗑️</button>
               </div>
-
               ${imgHtml}
               <div class="card-content">
                 <div>
@@ -1275,230 +1264,98 @@
     }
 
 
-    // --- 9. 雲端編輯與刪除 ---
+    // --- 9. 增刪改邏輯 ---
     async function editMilestone(id) {
-      if (!GOOGLE_SCRIPT_URL) {
-        alert("請先設定 GOOGLE_SCRIPT_URL 方可進行修改！");
-        return;
-      }
-
+      if (!GOOGLE_SCRIPT_URL) return;
       const index = milestones.findIndex(item => item.id === id);
       if (index === -1) return;
-
       const item = milestones[index];
 
-      const newTitle = prompt("修改地點/活動名稱：", item.title);
-      if (newTitle === null) return;
-      
-      const newDate = prompt("修改紀念日期 (格式：YYYY-MM-DD)：", item.date);
-      if (newDate === null) return;
+      const newTitle = prompt("修改地點/活動名稱：", item.title); if (newTitle === null) return;
+      const newDate = prompt("修改紀念日期 (YYYY-MM-DD)：", item.date); if (newDate === null) return;
+      const newLocation = prompt("修改國家 / 地區名稱：", item.locationText || ""); if (newLocation === null) return;
+      const newDesc = prompt("修改當時的回憶：", item.desc); if (newDesc === null) return;
 
-      const newLocation = prompt("修改國家 / 地區名稱：", item.locationText || "");
-      if (newLocation === null) return;
-
-      const newDesc = prompt("修改當時的回憶：", item.desc);
-      if (newDesc === null) return;
-
-      // 只有在是 placeholder SVG 時才可以編輯背景顏色跟表情！
       let newImg = item.img;
-      const isPlaceholder = item.img.startsWith('data:image/svg+xml') || item.img.includes('<svg');
-      if (isPlaceholder) {
-        const currentSettings = parsePlaceholderSvg(item.img);
-        const newColor = prompt("修改卡片背景顏色 (十六進制，如 #fab1a0 或 #ffeaa7)：", currentSettings.color);
-        if (newColor === null) return;
-
-        const newEmoji = prompt("修改顯示的 Emoji：", currentSettings.emoji);
-        if (newEmoji === null) return;
-
+      if (item.img.startsWith('data:image/svg+xml')) {
+        const curr = parsePlaceholderSvg(item.img);
+        const newColor = prompt("修改卡片背景顏色：", curr.color); if (newColor === null) return;
+        const newEmoji = prompt("修改顯示的 Emoji：", curr.emoji); if (newEmoji === null) return;
         newImg = generatePlaceholderSvg(newColor, newEmoji);
       }
 
-      const updatedData = {
-        action: 'edit',
-        id: id,
-        title: newTitle,
-        date: newDate,
-        locationText: newLocation,
-        desc: newDesc,
-        img: newImg
-      };
-
       try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
-          redirect: "follow",
-          method: "POST",
-          body: JSON.stringify(updatedData)
+          redirect: "follow", method: "POST", body: JSON.stringify({
+            action: 'edit', id: id, title: newTitle, date: newDate, locationText: newLocation, desc: newDesc, img: newImg
+          })
         });
-        
         if (response.ok) {
-          milestones[index].title = newTitle;
-          milestones[index].date = newDate;
-          milestones[index].locationText = newLocation;
-          milestones[index].desc = newDesc;
-          milestones[index].img = newImg;
-
-          renderMarkers();
-          renderTimeline();
-          alert("雲端修改成功囉！💝");
-        } else {
-          throw new Error("更新失敗");
+          milestones[index] = {...milestones[index], title: newTitle, date: newDate, locationText: newLocation, desc: newDesc, img: newImg};
+          renderMarkers(); renderTimeline(); alert("雲端修改成功！💝");
         }
-      } catch (err) {
-        alert("雲端修改失敗，請再試一次！");
-        console.error(err);
-      }
+      } catch (err) { alert("修改失敗"); }
     }
 
     async function deleteMilestone(id) {
-      if (!GOOGLE_SCRIPT_URL) {
-        alert("請先設定 GOOGLE_SCRIPT_URL 方可進行刪除！");
-        return;
-      }
-
-      const confirmDelete = confirm("你確定要刪除這個珍貴的回憶嗎？（雲端資料也會一併刪除喔）");
-      if (!confirmDelete) return;
-
+      if (!GOOGLE_SCRIPT_URL || !confirm("確定要刪除嗎？")) return;
       try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-          redirect: "follow",
-          method: "POST",
-          body: JSON.stringify({ action: 'delete', id: id })
-        });
-
-        if (response.ok) {
-          milestones = milestones.filter(item => item.id !== id);
-          renderMarkers();
-          renderTimeline();
-          alert("已成功自雲端刪除！🧹");
-        } else {
-          throw new Error("刪除失敗");
-        }
-      } catch (err) {
-        alert("雲端刪除失敗，請再試一次！");
-        console.error(err);
-      }
+        const response = await fetch(GOOGLE_SCRIPT_URL, { redirect: "follow", method: "POST", body: JSON.stringify({ action: 'delete', id: id }) });
+        if (response.ok) { milestones = milestones.filter(item => item.id !== id); renderMarkers(); renderTimeline(); alert("已成功刪除！🧹"); }
+      } catch (err) { alert("刪除失敗"); }
     }
 
-
-    // --- 10. 新增回憶表單與上傳雲端 ---
     const form = document.getElementById('milestone-form');
     form.addEventListener('submit', function(e) {
       e.preventDefault();
-
-      if (!GOOGLE_SCRIPT_URL) {
-        alert('請先在 JavaScript 代碼中填寫部屬好的 GOOGLE_SCRIPT_URL 才能將資料儲存至雲端喔！');
-        return;
-      }
-
-      if (!selectedLatLng) {
-        alert('請先在左邊地圖上點選一個位置喔！');
-        return;
-      }
+      if (!GOOGLE_SCRIPT_URL || !selectedLatLng) { alert('請填寫網址並點選地圖位置！'); return; }
       
-      if (document.getElementById('location-name').value === "尋找地名中... ⏳") {
-        alert('請稍等！');
-        return;
-      }
-
-      const fileInput = document.getElementById('image-input');
-      const file = fileInput.files[0];
-
+      const file = document.getElementById('image-input').files[0];
       const saveMilestone = async (imageDataUrl) => {
         const newMilestone = {
-          id: Date.now(),
-          lat: selectedLatLng.lat,
-          lng: selectedLatLng.lng,
-          locationText: selectedLocationText, 
-          title: document.getElementById('title').value,
-          date: document.getElementById('date').value,
-          desc: document.getElementById('desc').value,
-          img: imageDataUrl
+          id: Date.now(), lat: selectedLatLng.lat, lng: selectedLatLng.lng,
+          locationText: selectedLocationText, title: document.getElementById('title').value,
+          date: document.getElementById('date').value, desc: document.getElementById('desc').value, img: imageDataUrl
         };
-
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerText;
-        submitBtn.innerText = "上傳中... ☁️";
-        submitBtn.disabled = true;
-
+        const btn = form.querySelector('button[type="submit"]');
+        btn.innerText = "上傳雲端中... ☁️"; btn.disabled = true;
         try {
-          const response = await fetch(GOOGLE_SCRIPT_URL, {
-            redirect: "follow",
-            method: "POST",
-            body: JSON.stringify(newMilestone)
-          });
-          
-          if (response.ok) {
-            milestones.push(newMilestone);
-            renderMarkers();
-            form.reset();
-            selectedLatLng = null;
-            selectedLocationText = "";
-            alert('Wowww 成功將回憶留存到雲端！🎒💖');
-          } else {
-            throw new Error("雲端寫入失敗");
-          }
-        } catch (err) {
-          alert("儲存至雲端失敗，請檢查網路連線或 Apps Script 部屬設定！");
-          console.error(err);
-        } finally {
-          submitBtn.innerText = originalText;
-          submitBtn.disabled = false;
-        }
+          const res = await fetch(GOOGLE_SCRIPT_URL, { redirect: "follow", method: "POST", body: JSON.stringify(newMilestone) });
+          if (res.ok) { milestones.push(newMilestone); renderMarkers(); form.reset(); selectedLatLng = null; alert('成功將回憶留存到雲端！🎒💖'); }
+        } catch (err) { alert("儲存失敗"); } finally { btn.innerText = "💘 提交 ✨"; btn.disabled = false; }
       };
 
       if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          saveMilestone(event.target.result);
-        };
-        reader.readAsDataURL(file);
+        const rdr = new FileReader(); rdr.onload = (ev) => saveMilestone(ev.target.result); rdr.readAsDataURL(file);
       } else {
-        // 沒有相片時：自動派發隨機色系與表情符號！
-        const randomColor = getRandomElement(PRESET_COLORS);
-        const randomEmoji = getRandomElement(PRESET_EMOJIS);
-        const customSvg = generatePlaceholderSvg(randomColor, randomEmoji);
-        saveMilestone(customSvg);
+        saveMilestone(generatePlaceholderSvg(getRandomElement(PRESET_COLORS), getRandomElement(PRESET_EMOJIS)));
       }
     });
 
 
-    // --- 11. 倒數計時邏輯 ---
+    // --- 10. 倒數計時計時器 ---
     function updateCountdown() {
       document.getElementById('countdown-title').innerText = `距離【${nextTrip.title}】`;
-      
       const targetDate = new Date(nextTrip.date + "T00:00:00");
-      const now = new Date();
-      const diff = targetDate - now;
-
-      if (diff <= 0) {
-        document.getElementById('countdown-display').innerText = "就是今天！🎉";
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
+      const diff = targetDate - new Date();
+      if (diff <= 0) { document.getElementById('countdown-display').innerText = "就是今天！🎉"; return; }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
       document.getElementById('countdown-display').innerText = `${days}天 ${hours}時 ${minutes}分 ${seconds}秒`;
     }
 
     document.getElementById('countdown-setup').addEventListener('click', function(e) {
       e.stopPropagation();
-      const newTitle = prompt("請輸入下一次旅行的目的地 / 活動：", nextTrip.title);
-      if (!newTitle) return;
-      const newDate = prompt("請輸入日期 (格式：YYYY-MM-DD)：", nextTrip.date);
-      if (!newDate) return;
-
-      nextTrip = { title: newTitle, date: newDate };
-      localStorage.setItem('nextTrip', JSON.stringify(nextTrip));
-      updateCountdown();
+      const t = prompt("請輸入下一次旅行的目的地：", nextTrip.title); if (!t) return;
+      const d = prompt("請輸入日期 (YYYY-MM-DD)：", nextTrip.date); if (!d) return;
+      nextTrip = { title: t, date: d }; localStorage.setItem('nextTrip', JSON.stringify(nextTrip)); updateCountdown();
     });
 
     setInterval(updateCountdown, 1000);
 
-
-    // --- 12. 初始化載入 ---
+    // --- 11. 初始化執行 ---
     loadMilestonesFromCloud();
     updateCountdown();
     startCarousel();
